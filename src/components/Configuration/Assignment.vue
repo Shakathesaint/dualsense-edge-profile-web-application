@@ -135,10 +135,11 @@ const scanSelected = (e: Event) => {
   height: 512px;
   max-width: 80%;
   display: block;
-  margin: 50px auto 0 auto;
+  margin: 32px auto;
   background-image: url("../../assets/edge-front.png");
   background-size: cover;
   position: relative;
+  filter: brightness(0.95);
 }
 
 .circle-button {
@@ -159,25 +160,62 @@ const scanSelected = (e: Event) => {
 
 .select-popup {
   position: absolute;
-  width: 115px;
-  padding: 10px 20px;
-  color: #00473e;
-  box-shadow: 3px 5px 12px 2px rgba(0, 0, 0, 0.15);
-  background-color: #FFFFFF;
+  min-width: 140px;
+  padding: 16px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
   display: none;
+  color: var(--text-primary);
+}
+
+.select-popup p {
+  margin: 0 0 12px 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.select-popup label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.select-popup select {
+  width: 100%;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-primary);
+  padding: 8px 10px;
+  font-size: 0.9rem;
+}
+
+.select-popup select:focus {
+  outline: none;
+  border-color: var(--border-focus);
 }
 
 .select-popup-close {
   all: unset;
-  font-size: 1.4em;
-  padding: 2px;
-  font-weight: bold;
-  cursor: pointer;
-  width: 20px;
-  text-align: center;
   position: absolute;
-  right: 0;
-  top: 0;
+  right: 8px;
+  top: 8px;
+  width: 24px;
+  height: 24px;
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.select-popup-close:hover {
+  background-color: var(--bg-card-hover);
+  color: var(--text-primary);
 }
 
 .dpad-button {
@@ -270,29 +308,17 @@ const scanSelected = (e: Event) => {
 }
 
 .interactable {
-  background-color: #faae2b;
+  background-color: rgba(0, 112, 209, 0.6);
   cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
 .interactable:hover {
-  background-color: #fa5246;
+  background-color: rgba(0, 112, 209, 0.9);
 }
 
 .button-identifier-original {
-  font-weight: bold;
-}
-
-@media (prefers-color-scheme: dark) {
-  .interactable:hover {
-    background-color: #f25f4c;
-  }
-  .interactable {
-    background-color: #ff8906;
-  }
-  .select-popup {
-    background-color: #f25f4c;
-    border: 1px solid #ffffff;
-    color: #fffffe;
-  }
+  color: var(--text-primary);
+  font-weight: 600;
 }
 </style>

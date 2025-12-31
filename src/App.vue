@@ -131,61 +131,63 @@ const saveProfile = (newProfile: Profile) => {
 .container {
   width: 100%;
   display: flex;
+  min-height: 100vh;
 }
 
 .profile-overview {
-  width: 320px;
+  width: var(--sidebar-width);
+  flex-shrink: 0;
 }
 
 .configurator {
   flex: 1;
+  background-color: var(--bg-primary);
 }
 
 .connect-controller-container {
   height: 100vh;
   display: flex;
-  margin: auto;
-  width: 520px;
-}
-
-.connect-controller-header {
-  color: #00473e;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+  width: 100%;
 }
 
 .connect-controller-content {
-  margin: auto;
-  color: #475d5b;
-  border-bottom: 2px solid #00332c;
-  border-top: 2px solid #00332c;
-  padding: 10px 20px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-lg);
+  padding: 40px 48px;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: var(--shadow-lg);
+}
+
+.connect-controller-header {
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.connect-controller-text {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
 }
 
 .connect-controller-button {
-  background-color: #faae2b;
-  border: 0;
-  color: #00473e;
-  padding: 12px 20px;
-  font-weight: bold;
-  margin-bottom: 12px;
+  background-color: var(--accent-blue);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--border-radius-md);
+  padding: 12px 32px;
+  font-weight: 600;
+  font-size: 0.95rem;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-
-@media (prefers-color-scheme: dark) {
-  .connect-controller-header {
-    color: #fffffe;
-  }
-
-  .connect-controller-content {
-    color: #a7a9be;
-    border-bottom: 2px solid #ffffff;
-    border-top: 2px solid #ffffff;
-    background-color: #1F1B24;
-  }
-
-  .connect-controller-button {
-    color: #fffffe;
-    background-color: #ff8906;
-  }
+.connect-controller-button:hover {
+  background-color: var(--accent-blue-hover);
 }
 </style>

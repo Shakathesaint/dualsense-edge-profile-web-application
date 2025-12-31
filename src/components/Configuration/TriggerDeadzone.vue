@@ -25,15 +25,55 @@ defineProps({
   </section>
 </template>
 <style scoped>
+section {
+  margin-bottom: 32px;
+}
+
+h3 {
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 12px 0 4px 0;
+}
+
 input[type="range"] {
   width: 300px;
+  max-width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--bg-card-hover);
+  border-radius: 3px;
+  outline: none;
 }
-h3, p {
-  color: #00473e;
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--accent-blue);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s ease;
 }
-@media (prefers-color-scheme: dark) {
-  h3, p {
-    color: #fffffe;
-  }
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--accent-blue);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
 }
 </style>

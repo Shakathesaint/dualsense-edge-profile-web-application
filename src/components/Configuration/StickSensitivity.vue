@@ -52,13 +52,8 @@ const drawCurve = (ctx: CanvasRenderingContext2D, joystick: Joystick, testProgre
   const cellWidth = ctx.canvas.width / cols;
   const cellHeight = ctx.canvas.height / rows;
 
-  ctx.strokeStyle = '#000000';
-
-  // If dark mode
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    ctx.strokeStyle = '#ffffff';
-  }
-
+  // Grid color for dark theme
+  ctx.strokeStyle = '#8b949e';
   ctx.lineWidth = 0.1;
 
   // Draw the grid
@@ -70,6 +65,8 @@ const drawCurve = (ctx: CanvasRenderingContext2D, joystick: Joystick, testProgre
     }
   }
 
+  // Curve line color for dark theme
+  ctx.strokeStyle = '#f0f6fc';
   ctx.beginPath();
   ctx.moveTo(0, ctx.canvas.height);
   ctx.lineWidth = 2;
@@ -80,13 +77,10 @@ const drawCurve = (ctx: CanvasRenderingContext2D, joystick: Joystick, testProgre
   ctx.lineTo(ctx.canvas.width,0);
   ctx.stroke();
   ctx.closePath();
+
+  // Progress overlay - PlayStation blue
   ctx.beginPath();
-  // If darkmode
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    ctx.fillStyle = 'rgba(242,95,76,0.5)';
-  } else {
-    ctx.fillStyle = 'rgba(64,142,198,0.5)';
-  }
+  ctx.fillStyle = 'rgba(0, 112, 209, 0.3)';
   ctx.fillRect(0, 0, (testProgress * 2 / 255) * ctx.canvas.width, ctx.canvas.height);
   ctx.stroke();
   ctx.closePath();
@@ -203,31 +197,104 @@ onUnmounted(() => {
   </section>
 </template>
 <style scoped>
-input[type="range"] {
-  width: 300px;
+section {
+  margin-bottom: 32px;
 }
+
 h3 {
-  color: #00473e;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
 }
-@media (prefers-color-scheme: dark) {
-  h3 {
-    color: #fffffe;
-  }
-}
+
 .note {
-  margin-top: 21px;
   display: block;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background-color: rgba(210, 153, 34, 0.1);
+  border: 1px solid rgba(210, 153, 34, 0.3);
+  border-radius: var(--border-radius-sm);
+  color: var(--accent-orange);
+  font-size: 0.85rem;
 }
+
 .canvasContainer {
   width: 520px;
+  max-width: 100%;
   height: 255px;
   resize: both;
   overflow: hidden;
-  border: 1px solid white;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-md);
+  background-color: var(--bg-input);
+  margin-bottom: 16px;
 }
+
 .curve {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+select {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  margin-right: 16px;
+  min-width: 120px;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+
+input[type="range"] {
+  width: 300px;
+  max-width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--bg-card-hover);
+  border-radius: 3px;
+  outline: none;
+  margin-top: 8px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--accent-blue);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--accent-blue);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+input[type="range"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+input[type="range"]:disabled::-webkit-slider-thumb {
+  cursor: not-allowed;
 }
 </style>

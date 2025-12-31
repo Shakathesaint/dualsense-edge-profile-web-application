@@ -150,7 +150,21 @@ const handleFileImport = async (event: Event) => {
 
 <template>
   <section class="overview">
-    <section>
+    <!-- Controller Info Section -->
+    <section class="controller-info">
+      <div class="controller-image-container">
+        <img src="../../assets/edge-front.png" alt="DualSense Edge" class="controller-image" />
+      </div>
+      <h2 class="controller-name">DualSense Edge Wireless Controller</h2>
+      <p class="controller-status">Connected via USB</p>
+    </section>
+
+    <!-- Profiles Container -->
+    <section class="profiles-container">
+      <!-- Controller Profiles Section -->
+      <div class="section-header">
+        <h3 class="section-title">Controller Profiles</h3>
+      </div>
       <section class="profiles" v-if="profiles">
         <Profile @selected-profile="(selectedProfile) => $emit('selected-profile', selectedProfile)"
                  v-for="(profile, i) in profiles"
@@ -158,6 +172,7 @@ const handleFileImport = async (event: Event) => {
           <div class="profile-right">
             <span class="button-combination">
               <span class="fn-button">FN</span>
+              <span class="plus-sign">+</span>
               <img class="action-button" :src="getProfileButtonSelector((profile as ProfileModel).getProfileButtonSelector())" alt="button">
             </span>
             <div class="profile-actions">
@@ -174,7 +189,12 @@ const handleFileImport = async (event: Event) => {
           </div>
         </Profile>
       </section>
-      <section class="profiles saved">
+
+      <!-- Saved Profiles Section -->
+      <div class="section-header" v-if="savedProfiles.length">
+        <h3 class="section-title">Saved Profiles</h3>
+      </div>
+      <section class="profiles saved" v-if="savedProfiles.length">
         <Profile @selected-profile="(selectedProfile) => $emit('selected-profile', selectedProfile, true)"
                  v-for="profile in savedProfiles"
                  :profile="profile">
@@ -185,6 +205,8 @@ const handleFileImport = async (event: Event) => {
         </Profile>
       </section>
     </section>
+
+    <!-- Bottom Action Buttons -->
     <section class="create-new-profile">
       <button @click="createNewProfile()">
         + Create new profile
@@ -208,110 +230,196 @@ const handleFileImport = async (event: Event) => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  background-color: #408EC6;
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-primary);
 }
 
-.create-new-profile {
-  display: flex;
+/* Controller Info Section */
+.controller-info {
+  padding: 24px 20px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-secondary);
 }
 
-.create-new-profile button {
-  cursor: pointer;
-  width: 50%;
-  height: 50px;
-  border: 0;
-  background-color: #faae2b;
-  color: #00473e;
+.controller-image-container {
+  margin-bottom: 16px;
+}
+
+.controller-image {
+  max-width: 180px;
+  height: auto;
+  filter: brightness(0.95) contrast(1.05);
+}
+
+.controller-name {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.controller-status {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* Profiles Container */
+.profiles-container {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Section Headers */
+.section-header {
+  padding: 16px 20px 8px 20px;
+}
+
+.section-title {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+/* Profiles List */
+.profiles {
+  padding: 0;
 }
 
 .saved {
-  border-top: 1px solid black;
+  border-top: 1px solid var(--border-secondary);
+  margin-top: 8px;
+  padding-top: 8px;
 }
 
-.profile-delete-button {
-  all: unset;
-  cursor: pointer;
-  font-weight: bold;
+/* Profile Right Section */
+.profile-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
+/* Button Combination Styling */
 .button-combination {
   display: flex;
-  gap: 12px;
-  padding: 8px 0;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
 }
 
 .fn-button {
-  width: 30px;
-  text-align: center;
-  height: 20px;
-  background-color: #0f0f10;
-  color: #a4aaad;
-  padding: 2px;
+  background-color: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 6px;
   border-radius: 4px;
+  border: 1px solid var(--border-primary);
+}
+
+.plus-sign {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
 }
 
 .action-button {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
+  filter: invert(1) brightness(0.85);
 }
 
-.clear-button {
-  all: unset;
-  cursor: pointer;
-  font-weight: bold;
-  border: 1px solid #ffffff;
-  margin-bottom: 10px;
-  padding: 5px 12px;
-}
-
-.clear-button:hover {
-  background-color: #fffffe;
-}
-
+/* Profile Actions */
 .profile-actions {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 6px;
+  flex-wrap: nowrap;
+  margin-top: 4px;
+  align-items: center;
 }
 
 .profile-actions-saved {
   display: flex;
-  gap: 12px;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 
 .action-button-text {
   all: unset;
   cursor: pointer;
-  font-weight: bold;
-  color: #00473e;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-primary);
+  padding: 4px 8px;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .action-button-text:hover {
-  text-decoration: underline;
+  background-color: var(--bg-card-hover);
+  color: var(--text-primary);
 }
 
-@media (prefers-color-scheme: dark) {
-  .overview {
-    background-color: #f25f4c;
-  }
+.clear-button {
+  all: unset;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-primary);
+  padding: 4px 8px;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
 
-  .create-new-profile button {
-    background-color: #ff8906;
-    font-weight: bold;
-    color: #fffffe;
-  }
+.clear-button:hover {
+  background-color: var(--bg-card-hover);
+  color: var(--text-primary);
+}
 
-  .saved {
-    border-top: 1px solid #fffffe;
-  }
+.profile-delete-button {
+  all: unset;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--accent-red);
+  border: 1px solid var(--accent-red);
+  padding: 4px 8px;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
 
-  .clear-button:hover {
-    background-color: #0f0f10;
-  }
+.profile-delete-button:hover {
+  background-color: rgba(248, 81, 73, 0.1);
+}
 
-  .action-button-text {
-    color: #fffffe;
-  }
+/* Bottom Action Buttons */
+.create-new-profile {
+  display: flex;
+  border-top: 1px solid var(--border-primary);
+}
+
+.create-new-profile button {
+  flex: 1;
+  cursor: pointer;
+  height: 48px;
+  border: none;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.create-new-profile button:first-child {
+  border-right: 1px solid var(--border-primary);
+}
+
+.create-new-profile button:hover {
+  background-color: var(--bg-card-hover);
 }
 </style>

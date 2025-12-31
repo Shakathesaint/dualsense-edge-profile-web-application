@@ -25,29 +25,25 @@ defineEmits([
 .item {
   display: flex;
   justify-content: space-between;
-  padding: 0 12px;
+  padding: 12px 20px;
   cursor: pointer;
   align-items: center;
+  transition: background-color 0.15s ease;
+  border-left: 3px solid transparent;
 }
 
 .item:hover {
-  background-color: #80aac9;
+  background-color: var(--bg-card);
 }
 
 p {
+  margin: 0;
   padding: 0;
 }
 
 .label {
-  font-weight: 600;
-}
-
-@media (prefers-color-scheme: dark) {
-  .item {
-    color: #fffffe;
-  }
-  .item:hover {
-    background-color: rgba(147, 97, 97, 0.34);
-  }
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.95rem;
 }
 </style>

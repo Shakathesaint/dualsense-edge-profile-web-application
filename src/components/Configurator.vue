@@ -116,98 +116,132 @@ watch(props, data => {
 
 <style scoped>
 .configurator {
-  padding: 10px 20px;
+  padding: 24px 32px;
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
-.tabs {
-  width: 100%;
-  display: flex;
-  justify-content: space-evenly;
-}
-
-.tab {
-  padding: 10px 14px;
-  width: 100%;
-  cursor: pointer;
-  color: #00473e;
-  border: 1px solid #00332c;
-  text-align: center;
-}
-
-.tab.active {
-  background-color: #faae2b;
-}
-
+/* Top Header Section */
 .configurator-top-header {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-}
-
-.apply-existing-profile {
-  padding: 10px;
-  border: 1px solid #00473e;
-  margin-bottom: 10px;
-}
-
-.apply-existing-profile label {
-  margin-bottom: 5px;
-  display: block;
-}
-
-.apply-existing-profile select {
-  display: block;
-  width: 100%;
-}
-
-.save-btn {
-  all: unset;
-  padding: 10px;
-  background-color: #408EC6;
-  color: #fffffe;
-  font-weight: bold;
-  cursor: pointer;
-  width: 75px;
-  text-align: center;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .profile-name {
-  color: #00473e;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-@media (prefers-color-scheme: dark) {
-  .configurator {
-    color: #a7a9be;
-    background-color: #0f0e17;
-  }
+.profile-name input {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  font-size: 1rem;
+}
 
-  .profile-name {
-    color: #fffffe;
-  }
+.profile-name input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
 
-  .tab {
-    color: #fffffe;
-    border: 1px solid #fffffe;
-  }
+/* Apply Existing Profile Dropdown */
+.apply-existing-profile {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-md);
+  padding: 12px 16px;
+}
 
-  .tab.active {
-    background-color: #ff8906;
-    font-weight: bold;
-  }
+.apply-existing-profile label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
 
-  .save-btn {
-    all: unset;
-    padding: 10px;
-    background-color: #f25f4c;
-    color: #fffffe;
-    font-weight: bold;
-    cursor: pointer;
-    width: 75px;
-    text-align: center;
-  }
-  .apply-existing-profile {
-    border: 1px solid #fffffe;
-    color: #fffffe;
-  }
+.apply-existing-profile select {
+  width: 100%;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+
+.apply-existing-profile select:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+
+/* Save Button */
+.save-btn {
+  background-color: var(--accent-blue);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--border-radius-md);
+  padding: 10px 24px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.save-btn:hover {
+  background-color: var(--accent-blue-hover);
+}
+
+/* Tabs Section */
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  background-color: var(--bg-card);
+  border-radius: var(--border-radius-md);
+  padding: 4px;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px 16px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.tab:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-card-hover);
+}
+
+.tab.active {
+  background-color: var(--accent-blue);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Configuration Container */
+.configuration-setting-container {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-lg);
+  padding: 24px;
 }
 </style>

@@ -5,6 +5,7 @@ import ButtonMapping from "../model/ButtonMapping";
 import {ProfileButtonSelector} from "../enum/ProfileButtonSelector";
 import {PS5_JOYSTICK_CURVE} from "./bytesToProfile";
 import {generateId} from "./profileTools";
+import JSZip from "jszip";
 
 const EXPORT_VERSION = "1.0";
 
@@ -133,4 +134,160 @@ export function downloadProfileAsJSON(profile: Profile): void {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+// Bulk export/import interfaces and functions
+
+export interface BulkExportMetadata {
+  version: string;
+  exportedAt: string;
+  profileCount: number;
+  appName: string;
+}
+
+export interface ImportResult {
+  imported: Profile[];
+  renamed: { original: string; newName: string }[];
+  errors: string[];
+}
+
+export function resolveNameConflict(name: string, existingNames: string[]): string {
+  if (!existingNames.includes(name)) {
+    return name;
+  }
+
+  let counter = 2;
+  let newName = `${name} (${counter})`;
+  while (existingNames.includes(newName)) {
+    counter++;
+    newName = `${name} (${counter})`;
+  }
+  return newName;
+}
+
+function sanitizeFilename(name: string): string {
+  return name.replace(/[^a-z0-9_\-\s]/gi, '_').substring(0, 50);
+}
+
+export async function exportProfilesToZip(profiles: Profile[]): Promise<Blob> {
+  const zip = new JSZip();
+
+  const metadata: BulkExportMetadata = {
+    version: EXPORT_VERSION,
+    exportedAt: new Date().toISOString(),
+    profileCount: profiles.length,
+    appName: "DualSense Edge Profile Manager"
+  };
+
+  zip.file("metadata.json", JSON.stringify(metadata, null, 2));
+
+  const profilesFolder = zip.folder("profiles");
+  if (!profilesFolder) {
+    throw new Error("Failed to create profiles folder in ZIP");
+  }
+
+  const usedFilenames = new Set<string>();
+  for (const profile of profiles) {
+    const exportData = profileToJSON(profile);
+    const json = JSON.stringify(exportData, null, 2);
+
+    let filename = sanitizeFilename(profile.getLabel());
+    if (usedFilenames.has(filename.toLowerCase())) {
+      let counter = 2;
+      while (usedFilenames.has(`${filename}_${counter}`.toLowerCase())) {
+        counter++;
+      }
+      filename = `${filename}_${counter}`;
+    }
+    usedFilenames.add(filename.toLowerCase());
+
+    profilesFolder.file(`${filename}.json`, json);
+  }
+
+  return await zip.generateAsync({ type: "blob" });
+}
+
+export async function importProfilesFromZip(
+  file: File,
+  existingNames: string[]
+): Promise<ImportResult> {
+  const result: ImportResult = {
+    imported: [],
+    renamed: [],
+    errors: []
+  };
+
+  let zip: JSZip;
+  try {
+    zip = await JSZip.loadAsync(file);
+  } catch {
+    throw new Error("Invalid ZIP file format");
+  }
+
+  const metadataFile = zip.file("metadata.json");
+  if (metadataFile) {
+    try {
+      const metadataContent = await metadataFile.async("string");
+      const metadata = JSON.parse(metadataContent) as BulkExportMetadata;
+      if (metadata.version !== EXPORT_VERSION) {
+        console.warn(`ZIP version mismatch: expected ${EXPORT_VERSION}, got ${metadata.version}`);
+      }
+    } catch {
+      console.warn("Could not read metadata.json, continuing anyway");
+    }
+  }
+
+  const profilesFolder = zip.folder("profiles");
+  const profileFiles = profilesFolder
+    ? Object.keys(zip.files).filter(
+        (path) => path.startsWith("profiles/") && path.endsWith(".json")
+      )
+    : Object.keys(zip.files).filter((path) => path.endsWith(".json") && path !== "metadata.json");
+
+  const currentNames = [...existingNames];
+
+  for (const filePath of profileFiles) {
+    const zipFile = zip.file(filePath);
+    if (!zipFile) continue;
+
+    try {
+      const content = await zipFile.async("string");
+      const data = JSON.parse(content) as ExportedProfile;
+      const profile = jsonToProfile(data);
+
+      const originalName = profile.getLabel();
+      const resolvedName = resolveNameConflict(originalName, currentNames);
+
+      if (resolvedName !== originalName) {
+        profile.setLabel(resolvedName);
+        result.renamed.push({ original: originalName, newName: resolvedName });
+      }
+
+      currentNames.push(resolvedName);
+      result.imported.push(profile);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      result.errors.push(`${filePath}: ${errorMessage}`);
+    }
+  }
+
+  return result;
+}
+
+export async function downloadProfilesAsZip(profiles: Profile[]): Promise<Blob> {
+  const blob = await exportProfilesToZip(profiles);
+
+  const date = new Date().toISOString().split("T")[0];
+  const filename = `dualsense_profiles_backup_${date}.zip`;
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  return blob;
 }

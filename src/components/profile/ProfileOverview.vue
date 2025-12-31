@@ -4,7 +4,15 @@ import Profile from "./Profile.vue";
 import ProfileModel from "../../model/Profile";
 import LocalIndexDB from "../../model/LocalIndexDB";
 import {assembleBlankProfile, generateId, getProfileButtonSelector} from "../../helper/profileTools";
-import {downloadProfileAsJSON, jsonToProfile, ExportedProfile} from "../../helper/profileSerializer";
+import {
+  downloadProfileAsJSON,
+  jsonToProfile,
+  ExportedProfile,
+  downloadProfilesAsZip,
+  importProfilesFromZip,
+  ImportResult
+} from "../../helper/profileSerializer";
+import {createShareableLink, copyToClipboard} from "../../helper/cloudShare";
 import {inject, ref} from "vue";
 import type {Ref} from "vue";
 import Joystick from "../../model/Joystick";
@@ -75,6 +83,19 @@ const createNewProfile = () => {
 
 const fileInput = ref<HTMLInputElement | null>(null);
 
+// Dialog states
+const showShareConfirmDialog = ref(false);
+const showShareResultDialog = ref(false);
+const showImportSummaryDialog = ref(false);
+const isExporting = ref(false);
+const isCreatingLink = ref(false);
+
+// Dialog data
+const lastExportedBlob = ref<Blob | null>(null);
+const shareResultUrl = ref("");
+const shareResultError = ref("");
+const importSummary = ref<ImportResult | null>(null);
+
 const saveProfileLocally = (profile: ProfileModel) => {
   const leftProfileId = profile.getLeftJoyStick().getProfileId();
   const rightProfileId = profile.getRightJoyStick().getProfileId();
@@ -123,16 +144,24 @@ const handleFileImport = async (event: Event) => {
 
   if (!file) return;
 
+  const isZipFile = file.name.toLowerCase().endsWith('.zip') ||
+                    file.type === 'application/zip' ||
+                    file.type === 'application/x-zip-compressed';
+
   try {
-    const text = await file.text();
-    const data: ExportedProfile = JSON.parse(text);
-    const profile = jsonToProfile(data);
+    if (isZipFile) {
+      await handleBulkImport(file);
+    } else {
+      const text = await file.text();
+      const data: ExportedProfile = JSON.parse(text);
+      const profile = jsonToProfile(data);
 
-    db.store(profile);
-    savedProfiles.value.push(profile);
-    emit('selected-profile', profile, true);
+      db.store(profile);
+      savedProfiles.value.push(profile);
+      emit('selected-profile', profile, true);
 
-    alert(`Profile "${profile.getLabel()}" imported successfully!`);
+      alert(`Profile "${profile.getLabel()}" imported successfully!`);
+    }
   } catch (error) {
     if (error instanceof SyntaxError) {
       alert("Invalid file format: not a valid JSON file");
@@ -144,6 +173,96 @@ const handleFileImport = async (event: Event) => {
   }
 
   target.value = '';
+};
+
+// Bulk export/import functions
+const exportAllProfiles = async () => {
+  if (savedProfiles.value.length === 0) {
+    alert("No saved profiles to export");
+    return;
+  }
+
+  isExporting.value = true;
+
+  try {
+    const blob = await downloadProfilesAsZip(savedProfiles.value);
+    lastExportedBlob.value = blob;
+    showShareConfirmDialog.value = true;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    alert(`Export failed: ${message}`);
+  } finally {
+    isExporting.value = false;
+  }
+};
+
+const handleBulkImport = async (file: File) => {
+  const existingNames = savedProfiles.value.map(p => p.getLabel());
+
+  const result = await importProfilesFromZip(file, existingNames);
+  importSummary.value = result;
+
+  for (const profile of result.imported) {
+    db.store(profile);
+    savedProfiles.value.push(profile);
+  }
+
+  if (result.imported.length > 0) {
+    emit('selected-profile', result.imported[0], true);
+  }
+
+  showImportSummaryDialog.value = true;
+};
+
+const confirmShareLink = async () => {
+  showShareConfirmDialog.value = false;
+
+  if (!lastExportedBlob.value) return;
+
+  isCreatingLink.value = true;
+  shareResultUrl.value = "";
+  shareResultError.value = "";
+
+  const date = new Date().toISOString().split("T")[0];
+  const filename = `dualsense_profiles_backup_${date}.txt`;
+
+  const result = await createShareableLink(lastExportedBlob.value, filename);
+
+  isCreatingLink.value = false;
+
+  if (result.success && result.url) {
+    shareResultUrl.value = result.url;
+  } else {
+    shareResultError.value = result.error || "Unknown error";
+  }
+
+  showShareResultDialog.value = true;
+};
+
+const cancelShareLink = () => {
+  showShareConfirmDialog.value = false;
+  lastExportedBlob.value = null;
+};
+
+const closeShareResultDialog = () => {
+  showShareResultDialog.value = false;
+  shareResultUrl.value = "";
+  shareResultError.value = "";
+  lastExportedBlob.value = null;
+};
+
+const closeImportSummaryDialog = () => {
+  showImportSummaryDialog.value = false;
+  importSummary.value = null;
+};
+
+const copyShareUrl = async () => {
+  if (shareResultUrl.value) {
+    const success = await copyToClipboard(shareResultUrl.value);
+    if (success) {
+      alert("Link copied to clipboard!");
+    }
+  }
 };
 
 </script>
@@ -193,6 +312,13 @@ const handleFileImport = async (event: Event) => {
       <!-- Saved Profiles Section -->
       <div class="section-header" v-if="savedProfiles.length">
         <h3 class="section-title">Saved Profiles</h3>
+        <button
+          class="export-all-button"
+          @click="exportAllProfiles()"
+          :disabled="isExporting"
+        >
+          {{ isExporting ? 'Exporting...' : 'Export All' }}
+        </button>
       </div>
       <section class="profiles saved" v-if="savedProfiles.length">
         <Profile @selected-profile="(selectedProfile) => $emit('selected-profile', selectedProfile, true)"
@@ -217,11 +343,89 @@ const handleFileImport = async (event: Event) => {
       <input
         ref="fileInput"
         type="file"
-        accept=".json"
+        accept=".json,.zip"
         style="display: none"
         @change="handleFileImport"
       />
     </section>
+
+    <!-- Share Confirmation Dialog -->
+    <div class="dialog-overlay" v-if="showShareConfirmDialog" @click.self="cancelShareLink">
+      <div class="dialog">
+        <h3 class="dialog-title">Backup Complete!</h3>
+        <p class="dialog-message">
+          {{ savedProfiles.length }} profile(s) exported successfully.
+        </p>
+        <p class="dialog-message">
+          Do you want to create a shareable link for this backup?
+        </p>
+        <div class="dialog-actions">
+          <button class="dialog-button secondary" @click="cancelShareLink">No, thanks</button>
+          <button class="dialog-button primary" @click="confirmShareLink">Yes, create link</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Creating Link Loading Dialog -->
+    <div class="dialog-overlay" v-if="isCreatingLink">
+      <div class="dialog">
+        <h3 class="dialog-title">Creating Link...</h3>
+        <p class="dialog-message">Please wait while we upload your backup.</p>
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+
+    <!-- Share Result Dialog -->
+    <div class="dialog-overlay" v-if="showShareResultDialog" @click.self="closeShareResultDialog">
+      <div class="dialog">
+        <template v-if="shareResultUrl">
+          <h3 class="dialog-title success">Link Created!</h3>
+          <div class="share-url-container">
+            <input type="text" class="share-url-input" :value="shareResultUrl" readonly />
+            <button class="copy-button" @click="copyShareUrl">Copy</button>
+          </div>
+          <p class="dialog-note">
+            Note: This link expires in 72 hours. Anyone with the URL can download the file.
+          </p>
+        </template>
+        <template v-else>
+          <h3 class="dialog-title error">Link Creation Failed</h3>
+          <p class="dialog-message error-message">{{ shareResultError }}</p>
+        </template>
+        <div class="dialog-actions">
+          <button class="dialog-button primary" @click="closeShareResultDialog">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Summary Dialog -->
+    <div class="dialog-overlay" v-if="showImportSummaryDialog" @click.self="closeImportSummaryDialog">
+      <div class="dialog">
+        <h3 class="dialog-title">Import Complete</h3>
+        <div class="import-summary" v-if="importSummary">
+          <p class="summary-item success" v-if="importSummary.imported.length">
+            {{ importSummary.imported.length }} profile(s) imported
+          </p>
+          <div v-if="importSummary.renamed.length" class="renamed-list">
+            <p class="summary-label">Renamed profiles:</p>
+            <ul>
+              <li v-for="rename in importSummary.renamed" :key="rename.original">
+                "{{ rename.original }}" → "{{ rename.newName }}"
+              </li>
+            </ul>
+          </div>
+          <div v-if="importSummary.errors.length" class="error-list">
+            <p class="summary-label error">Errors:</p>
+            <ul>
+              <li v-for="error in importSummary.errors" :key="error">{{ error }}</li>
+            </ul>
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <button class="dialog-button primary" @click="closeImportSummaryDialog">OK</button>
+        </div>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -273,6 +477,9 @@ const handleFileImport = async (event: Event) => {
 /* Section Headers */
 .section-header {
   padding: 16px 20px 8px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .section-title {
@@ -282,6 +489,26 @@ const handleFileImport = async (event: Event) => {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0;
+}
+
+.export-all-button {
+  all: unset;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--accent-blue);
+  border: 1px solid var(--accent-blue);
+  padding: 4px 10px;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+}
+
+.export-all-button:hover:not(:disabled) {
+  background-color: rgba(0, 112, 209, 0.1);
+}
+
+.export-all-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Profiles List */
@@ -421,5 +648,197 @@ const handleFileImport = async (event: Event) => {
 
 .create-new-profile button:hover {
   background-color: var(--bg-card-hover);
+}
+
+/* Dialog Overlay and Modal */
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.dialog {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-md);
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.dialog-title {
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  text-align: center;
+}
+
+.dialog-title.success {
+  color: #3fb950;
+}
+
+.dialog-title.error {
+  color: var(--accent-red);
+}
+
+.dialog-message {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+
+.dialog-message.error-message {
+  color: var(--accent-red);
+}
+
+.dialog-note {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin: 12px 0;
+  text-align: center;
+  font-style: italic;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.dialog-button {
+  padding: 10px 20px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.dialog-button.primary {
+  background-color: var(--accent-blue);
+  color: white;
+}
+
+.dialog-button.primary:hover {
+  background-color: #0060b0;
+}
+
+.dialog-button.secondary {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-primary);
+}
+
+.dialog-button.secondary:hover {
+  background-color: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+/* Share URL Container */
+.share-url-container {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.share-url-input {
+  flex: 1;
+  padding: 10px 12px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-family: monospace;
+}
+
+.copy-button {
+  padding: 10px 16px;
+  background-color: var(--accent-blue);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.copy-button:hover {
+  background-color: #0060b0;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  margin: 20px auto;
+  border: 3px solid var(--border-primary);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Import Summary */
+.import-summary {
+  margin: 16px 0;
+}
+
+.summary-item {
+  margin: 8px 0;
+  text-align: center;
+}
+
+.summary-item.success {
+  color: #3fb950;
+}
+
+.summary-label {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 12px 0 4px 0;
+}
+
+.summary-label.error {
+  color: var(--accent-red);
+}
+
+.renamed-list,
+.error-list {
+  margin: 8px 0;
+}
+
+.renamed-list ul,
+.error-list ul {
+  margin: 4px 0;
+  padding-left: 20px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.renamed-list li {
+  color: #d29922;
+}
+
+.error-list li {
+  color: var(--accent-red);
 }
 </style>

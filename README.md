@@ -16,6 +16,18 @@ This fork introduces the following enhancements over the original project:
 
 - **PlayStation Accessories-Style UI** - Complete visual redesign matching Sony's PlayStation Accessories app aesthetic. Dark theme with a modern CSS variable system for consistent styling.
 
+- **Progressive Web App (PWA)** - Install the application on your desktop or mobile device for a native-like experience. Works completely offline after the first load—no internet connection required to configure your controller.
+
+### Install as App
+
+This application can be installed as a standalone app on your device:
+
+1. Open the application in **Chrome** or **Edge**.
+2. Look for the **Install** icon (⊕) in the address bar.
+3. Click **Install** and the app will open in its own window.
+
+Once installed, the app works **fully offline**. You can disconnect from the internet and still configure your DualSense Edge controller.
+
 ---
 
 ### Functionality

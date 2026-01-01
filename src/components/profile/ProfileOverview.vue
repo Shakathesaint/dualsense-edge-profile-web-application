@@ -20,6 +20,8 @@ import Trigger from "../../model/Trigger";
 import ButtonMapping from "../../model/ButtonMapping";
 import {PS5_JOYSTICK_CURVE} from "../../helper/bytesToProfile";
 import {ProfileButtonSelector} from "../../enum/ProfileButtonSelector";
+import { useToast } from "../../composables/useToast";
+import Modal from "../ui/Modal.vue";
 
 defineProps({
   profiles: Array<ProfileModel>,
@@ -32,6 +34,7 @@ const emit = defineEmits(['selected-profile', 'delete-profile']);
 const db: LocalIndexDB = inject('db') as LocalIndexDB;
 const hidController = inject('HIDController') as Ref<HIDDevice>;
 const getProfiles = inject('getProfiles') as Function;
+const { success, error, info } = useToast();
 
 db.getAll().then((profiles: Array<ProfileModel>) => savedProfiles.value = profiles.map((profileEntry: any) => {
 
@@ -52,32 +55,70 @@ db.getAll().then((profiles: Array<ProfileModel>) => savedProfiles.value = profil
   )
 }));
 
+// Modal States
+const showDeleteConfirm = ref(false);
+const profileToDelete = ref<ProfileModel | null>(null);
+
+const showClearConfirm = ref(false);
+const profileToClear = ref<ProfileModel | null>(null);
+const profileClearPosition = ref<number>(-1);
+
+const showNewProfileModal = ref(false);
+const newProfileName = ref("");
+
+// Delete Profile
 const deleteProfileConfirm = (profile: ProfileModel) => {
-  if (confirm(`Delete "${profile.getLabel()}"?`)) {
+  profileToDelete.value = profile;
+  showDeleteConfirm.value = true;
+}
+
+const confirmDelete = () => {
+  if (profileToDelete.value) {
+    const profile = profileToDelete.value;
     db.delete(profile.getId());
     emit('selected-profile', null);
     savedProfiles.value = savedProfiles.value.filter((foundProfile: ProfileModel) => foundProfile.getId() !== profile.getId());
+    info(`Profile "${profile.getLabel()}" deleted`);
   }
+  showDeleteConfirm.value = false;
+  profileToDelete.value = null;
 }
 
-const clearProfileFromControllerMemory = async (profile: ProfileModel, position: number) => {
+// Clear Memory
+const clearProfileFromControllerMemory = (profile: ProfileModel, position: number) => {
+  profileToClear.value = profile;
+  profileClearPosition.value = position;
+  showClearConfirm.value = true;
+}
 
-  if (confirm(`Are you sure you want to clear ${profile.getLabel()} from the controller memory?`) &&
-      hidController.value) {
+const confirmClear = async () => {
+  if (profileToClear.value && hidController.value && profileClearPosition.value !== -1) {
     const bytes = new Uint8Array(64);
-    bytes[1] = 1 + position;
+    bytes[1] = 1 + profileClearPosition.value;
     await hidController.value?.sendFeatureReport(0x68, bytes.slice(1, bytes.length));
     getProfiles();
+    info(`Cleared "${profileToClear.value.getLabel()}" from controller memory`);
   }
+  showClearConfirm.value = false;
+  profileToClear.value = null;
+  profileClearPosition.value = -1;
 }
 
+// New Profile
 const createNewProfile = () => {
-  let name = prompt("New profile name");
-  if (name) {
-    const profile = assembleBlankProfile(name);
+  newProfileName.value = "";
+  showNewProfileModal.value = true;
+}
+
+const confirmCreateProfile = () => {
+  if (newProfileName.value) {
+    const profile = assembleBlankProfile(newProfileName.value);
     db.store(profile);
     savedProfiles.value.push(profile);
     emit('selected-profile', profile);
+    success(`Profile "${newProfileName.value}" created`);
+    showNewProfileModal.value = false;
+    newProfileName.value = "";
   }
 }
 
@@ -160,15 +201,15 @@ const handleFileImport = async (event: Event) => {
       savedProfiles.value.push(profile);
       emit('selected-profile', profile, true);
 
-      alert(`Profile "${profile.getLabel()}" imported successfully!`);
+      success(`Profile "${profile.getLabel()}" imported successfully!`);
     }
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      alert("Invalid file format: not a valid JSON file");
-    } else if (error instanceof Error) {
-      alert(`Import failed: ${error.message}`);
+  } catch (err: any) {
+    if (err instanceof SyntaxError) {
+      error("Invalid file format: not a valid JSON file");
+    } else if (err instanceof Error) {
+      error(`Import failed: ${err.message}`);
     } else {
-      alert("Import failed: unknown error");
+      error("Import failed: unknown error");
     }
   }
 
@@ -178,7 +219,7 @@ const handleFileImport = async (event: Event) => {
 // Bulk export/import functions
 const exportAllProfiles = async () => {
   if (savedProfiles.value.length === 0) {
-    alert("No saved profiles to export");
+    info("No saved profiles to export");
     return;
   }
 
@@ -188,9 +229,9 @@ const exportAllProfiles = async () => {
     const blob = await downloadProfilesAsZip(savedProfiles.value);
     lastExportedBlob.value = blob;
     showShareConfirmDialog.value = true;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    alert(`Export failed: ${message}`);
+  } catch (err: any) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    error(`Export failed: ${message}`);
   } finally {
     isExporting.value = false;
   }
@@ -258,9 +299,9 @@ const closeImportSummaryDialog = () => {
 
 const copyShareUrl = async () => {
   if (shareResultUrl.value) {
-    const success = await copyToClipboard(shareResultUrl.value);
-    if (success) {
-      alert("Link copied to clipboard!");
+    const result = await copyToClipboard(shareResultUrl.value);
+    if (result) {
+      success("Link copied to clipboard!");
     }
   }
 };
@@ -426,6 +467,50 @@ const copyShareUrl = async () => {
         </div>
       </div>
     </div>
+
+    <!-- Modals -->
+    <Modal
+      title="Delete Profile"
+      :is-open="showDeleteConfirm"
+      confirm-text="Delete"
+      type="danger"
+      @close="showDeleteConfirm = false"
+      @confirm="confirmDelete"
+    >
+      <p>Are you sure you want to delete profile "{{ profileToDelete?.getLabel() }}"?</p>
+    </Modal>
+
+    <Modal
+      title="Clear Memory"
+      :is-open="showClearConfirm"
+      confirm-text="Clear"
+      type="danger"
+      @close="showClearConfirm = false"
+      @confirm="confirmClear"
+    >
+      <p>Are you sure you want to clear "{{ profileToClear?.getLabel() }}" from the controller memory?</p>
+    </Modal>
+
+    <Modal
+      title="Create New Profile"
+      :is-open="showNewProfileModal"
+      confirm-text="Create"
+      @close="showNewProfileModal = false"
+      @confirm="confirmCreateProfile"
+    >
+      <div class="form-group">
+        <label for="profileName">Profile Name:</label>
+        <input
+          id="profileName"
+          type="text"
+          v-model="newProfileName"
+          @keyup.enter="confirmCreateProfile"
+          placeholder="Enter profile name"
+          class="modal-input"
+          autofocus
+        />
+      </div>
+    </Modal>
   </section>
 </template>
 
@@ -795,6 +880,33 @@ const copyShareUrl = async () => {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Modal Input */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.modal-input {
+  padding: 10px 12px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(47, 129, 247, 0.2);
 }
 
 /* Import Summary */

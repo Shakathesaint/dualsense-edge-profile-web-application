@@ -13,7 +13,7 @@ export async function checkInternetConnection(): Promise<boolean> {
   const timeoutId = setTimeout(() => controller.abort(), CONNECTION_TIMEOUT);
 
   try {
-    const response = await fetch("https://catbox.moe", {
+    await fetch("https://catbox.moe", {
       method: "HEAD",
       mode: "no-cors",
       signal: controller.signal,

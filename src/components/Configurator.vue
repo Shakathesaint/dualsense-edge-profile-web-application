@@ -6,6 +6,7 @@ import StickSensitivity from "./Configuration/StickSensitivity.vue";
 import TriggerDeadzone from "./Configuration/TriggerDeadzone.vue";
 import LocalIndexDB from "../model/LocalIndexDB";
 import {inject} from "vue";
+import {useToast} from "../composables/useToast";
 
 const props = defineProps({
   selectedProfile: Profile,
@@ -17,6 +18,7 @@ const emits = defineEmits([
 ]);
 
 const db: LocalIndexDB = inject('db') as LocalIndexDB;
+const { success } = useToast();
 let selectedTabIndex = ref(0);
 let foundSavedProfiles: Ref<Array<any>> = ref([]);
 
@@ -52,7 +54,7 @@ const save = () => {
   console.log(copyProfile.value);
   if (props.isSavedProfile) {
     db.update(copyProfile.value);
-    alert(`Profile "${copyProfile.value.getLabel()}" saved`);
+    success(`Profile "${copyProfile.value.getLabel()}" saved`);
     return;
   }
   return emits('save', copyProfile.value);

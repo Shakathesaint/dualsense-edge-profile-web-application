@@ -2,7 +2,7 @@
 import ProfileOverview from "./components/profile/ProfileOverview.vue";
 import Configurator from "./components/Configurator.vue";
 import {provide, Ref, ref} from "vue";
-import {bytesArrayToProfile, profileToBytes, validateProfileReports} from "./helper/bytesToProfile";
+import {bytesArrayToProfile, profileToBytes} from "./helper/bytesToProfile";
 import Profile from "./model/Profile";
 import {arrayCRC32LeBLE} from "./helper/CRC32";
 import LocalIndexDB from "./model/LocalIndexDB";
@@ -45,13 +45,8 @@ const getProfiles = async () => {
     }
 
     const foundProfiles: Array<Profile> = [];
-    profileCollector.forEach((profileReports: Uint8Array[], profileIndex: number) => {
+    profileCollector.forEach((profileReports: Uint8Array[]) => {
       if (!profileReports.length) {
-        return;
-      }
-      const validationError = validateProfileReports(profileReports, profileIndex);
-      if (validationError) {
-        showError(validationError);
         return;
       }
       const profileData = profileReports.map(report => Array.from(report));

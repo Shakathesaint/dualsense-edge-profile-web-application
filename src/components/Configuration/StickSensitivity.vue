@@ -24,9 +24,6 @@ const rightJoystickRange = ref();
 const edgeHIDController: Ref<HIDDevice> = inject('HIDController')!;
 
 const getCurrentCurve = (joystick: Joystick): number => {
-
-  console.log(joystick.getCurveValues(), joystick.getProfileId());
-
   let indexCurve: number;
 
   for (indexCurve = 0; indexCurve < 10; indexCurve++) {

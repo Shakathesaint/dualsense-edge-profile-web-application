@@ -1,10 +1,10 @@
 import Profile from "../model/Profile";
 import Joystick from "../model/Joystick";
-import {JoystickProfileId} from "../enum/JoystickProfileId";
+import { JoystickProfileId } from "../enum/JoystickProfileId";
 import JoystickCurve from "../model/JoystickCurve";
 import Trigger from "../model/Trigger";
-import {ProfileButtonSelector} from "../enum/ProfileButtonSelector";
-import {arrayCRC32Le} from "./CRC32";
+import { ProfileButtonSelector } from "../enum/ProfileButtonSelector";
+import { arrayCRC32Le } from "./CRC32";
 import ButtonMapping from "../model/ButtonMapping";
 
 export const PS5_JOYSTICK_CURVE = [
@@ -89,8 +89,6 @@ export function bytesArrayToProfile(bytesArray: Array<Array<number>>): Profile {
             }
         }
 
-        console.log(label, bytesArray);
-
         leftJoystickCurrentCurveValues = bytesArray[1].slice(47, 53);
 
         rightJoystickCurrentCurveValues = bytesArray[1].slice(56, 60);
@@ -165,9 +163,6 @@ export function profileToBytes(profile: Profile): Array<Uint8Array> {
 
     buffers[1][44] = profile.getLeftJoyStick().getModifier();
     buffers[1][53] = profile.getRightJoyStick().getModifier();
-
-    console.log(profile.getLeftJoyStick().getModifier())
-    console.log(profile.getRightJoyStick().getModifier())
 
     // Deep copy using JSON
     let joyConL = JSON.parse(JSON.stringify(profile.getLeftJoyStick().getCurveValues()));

@@ -8,11 +8,17 @@ import {arrayCRC32LeBLE} from "./helper/CRC32";
 import LocalIndexDB from "./model/LocalIndexDB";
 import ToastContainer from "./components/ui/ToastContainer.vue";
 import {useToast} from "./composables/useToast";
+import {parseHIDError} from "./helper/errors";
+import {
+  DUALSENSE_EDGE_FILTER,
+  REPORT_ID,
+  CRC32_REPORT_PREFIX,
+} from "./constants/hid";
 
 const db = new LocalIndexDB('ds-edge-profiles');
 provide('db', db);
 
-const { success } = useToast();
+const { success, error: showError } = useToast();
 
 let edgeHIDController: Ref<HIDDevice | undefined> = ref();
 provide('HIDController', edgeHIDController);
@@ -21,72 +27,106 @@ let profiles = ref();
 let selectedProfile = ref();
 let hasSelectedSavedProfile = ref(false);
 
-const FILTERS = {
-  vendorId: 0x054C, // Sony Interactive Entertainment
-  productId: 0x0DF2 // DualSense Edge Wireless Controller
-};
-
 const getProfiles = async () => {
-  if (edgeHIDController.value) {
+  if (!edgeHIDController.value) return;
+
+  try {
     let profileCollector: Array<Array<Array<number>>> = [[]];
     let cIndex = 0;
-    for (let i = 112; i < 124; i++) {
-      if (cIndex % 3 === 0 && cIndex !== 0) {
+
+    for (let i = REPORT_ID.PROFILE_START; i < REPORT_ID.PROFILE_END; i++) {
+      if (cIndex % REPORT_ID.REPORTS_PER_PROFILE === 0 && cIndex !== 0) {
         profileCollector.push([]);
       }
-      let data: DataView = await edgeHIDController.value.receiveFeatureReport(i);
+      const data: DataView = await edgeHIDController.value.receiveFeatureReport(i);
       profileCollector[profileCollector.length - 1].push(Array.from(new Uint8Array(data.buffer)));
       cIndex++;
     }
-    let foundProfiles: Array<Profile> = [];
+
+    const foundProfiles: Array<Profile> = [];
     profileCollector.forEach((profile: number[][]) => {
       foundProfiles.push(bytesArrayToProfile(profile));
     });
     profiles.value = foundProfiles;
+  } catch (err) {
+    const hidError = parseHIDError(err);
+    showError(hidError.message);
   }
 }
 // Used for refreshing profiles called by child component(s)
 provide('getProfiles', getProfiles);
 
-const getDevice = () => {
-  navigator.hid!.requestDevice({filters: [FILTERS]}).then(devices => {
+const getDevice = async () => {
+  try {
+    const devices = await navigator.hid!.requestDevice({filters: [DUALSENSE_EDGE_FILTER]});
+
+    if (devices.length === 0) {
+      // User cancelled the dialog - not an error
+      return;
+    }
+
     const controller = devices[0];
 
-    controller.open().then(() => {
+    try {
+      await controller.open();
       edgeHIDController.value = controller;
-      getProfiles();
-    });
-  });
+      await getProfiles();
+    } catch (openErr) {
+      const hidError = parseHIDError(openErr);
+      showError(hidError.message);
+    }
+  } catch (err) {
+    // User cancelled the device picker - not an error, just ignore
+    if (err instanceof DOMException && err.name === 'NotAllowedError') {
+      return;
+    }
+    const hidError = parseHIDError(err);
+    showError(hidError.message);
+  }
 }
 
-navigator.hid!.addEventListener("connect", ({device}) => {
-  if (device.productId === FILTERS.productId && device.vendorId === FILTERS.vendorId) {
-    device.open().then(() => {
+navigator.hid!.addEventListener("connect", async ({device}) => {
+  if (device.productId === DUALSENSE_EDGE_FILTER.productId &&
+      device.vendorId === DUALSENSE_EDGE_FILTER.vendorId) {
+    try {
+      await device.open();
       edgeHIDController.value = device;
-      getProfiles();
-    });
+      await getProfiles();
+    } catch (err) {
+      const hidError = parseHIDError(err);
+      showError(hidError.message);
+    }
   }
 });
 
 navigator.hid!.addEventListener("disconnect", ({device}) => {
-  if (device.productId === FILTERS.productId && device.vendorId === FILTERS.vendorId) {
+  if (device.productId === DUALSENSE_EDGE_FILTER.productId &&
+      device.vendorId === DUALSENSE_EDGE_FILTER.vendorId) {
     edgeHIDController.value = undefined;
     selectedProfile.value = null;
     profiles.value = null;
   }
 });
 
-navigator.hid!.getDevices().then(devices => {
-  if (devices.length) {
-    devices.forEach(device => {
-      if (device.productId === FILTERS.productId && device.vendorId === FILTERS.vendorId) {
-        device.open().then(() => {
-          edgeHIDController.value = device;
-          getProfiles();
-        });
+// Check for already-connected devices on page load
+navigator.hid!.getDevices().then(async devices => {
+  for (const device of devices) {
+    if (device.productId === DUALSENSE_EDGE_FILTER.productId &&
+        device.vendorId === DUALSENSE_EDGE_FILTER.vendorId) {
+      try {
+        await device.open();
+        edgeHIDController.value = device;
+        await getProfiles();
+        break; // Only connect to the first matching device
+      } catch (err) {
+        const hidError = parseHIDError(err);
+        showError(hidError.message);
       }
-    });
+    }
   }
+}).catch(err => {
+  const hidError = parseHIDError(err);
+  showError(hidError.message);
 });
 
 const setSelectedProfile = (setSelectedProfile: Profile, isSavedProfile: boolean = false) => {
@@ -94,19 +134,23 @@ const setSelectedProfile = (setSelectedProfile: Profile, isSavedProfile: boolean
   selectedProfile.value = setSelectedProfile;
 }
 
-const saveProfile = (newProfile: Profile) => {
-  if (edgeHIDController.value) {
-    let bytesArray = profileToBytes(newProfile);
+const saveProfile = async (newProfile: Profile) => {
+  if (!edgeHIDController.value) return;
 
-    //TODO make it possible to function using bluetooth instead of relying on USB protocol
-    bytesArray.map(async bytes => {
-      let ident = bytes[0];
+  try {
+    const bytesArray = profileToBytes(newProfile);
 
-      bytes.set(arrayCRC32LeBLE(new Uint8Array([0xA3, ...bytes])), bytes.length - 4);
+    // Send all feature reports sequentially
+    for (const bytes of bytesArray) {
+      const ident = bytes[0];
+      bytes.set(arrayCRC32LeBLE(new Uint8Array([CRC32_REPORT_PREFIX, ...bytes])), bytes.length - 4);
+      await edgeHIDController.value.sendFeatureReport(ident, bytes.slice(1, bytes.length));
+    }
 
-      await edgeHIDController.value?.sendFeatureReport(ident, bytes.slice(1, bytes.length));
-    });
     success(`Profile "${newProfile.getLabel()}" is set to controller`);
+  } catch (err) {
+    const hidError = parseHIDError(err);
+    showError(`Failed to save profile: ${hidError.message}`);
   }
 }
 

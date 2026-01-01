@@ -34,7 +34,6 @@ let copyProfile = ref();
 
 const applyExistingProfile = (e: any) => {
   db.get(e.target.value).then((foundProfile: any) => {
-    console.log(foundProfile);
     copyProfile.value.setLabel(foundProfile.label);
     copyProfile.value.getLeftJoyStick().setProfileId(foundProfile.leftJoystick.profileId);
     copyProfile.value.getLeftJoyStick().setAdjustments(foundProfile.leftJoystick.adjustments);
@@ -51,7 +50,6 @@ const applyExistingProfile = (e: any) => {
 }
 
 const save = () => {
-  console.log(copyProfile.value);
   if (props.isSavedProfile) {
     db.update(copyProfile.value);
     success(`Profile "${copyProfile.value.getLabel()}" saved`);
@@ -63,7 +61,6 @@ const save = () => {
 watch(props, data => {
   if (!props.isSavedProfile) {
     db.getAll().then((data: Array<Profile>) => {
-      console.log(foundSavedProfiles);
       foundSavedProfiles.value = data;
     });
   }

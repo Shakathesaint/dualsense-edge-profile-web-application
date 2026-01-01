@@ -22,6 +22,8 @@ import {PS5_JOYSTICK_CURVE} from "../../helper/bytesToProfile";
 import {ProfileButtonSelector} from "../../enum/ProfileButtonSelector";
 import { useToast } from "../../composables/useToast";
 import Modal from "../ui/Modal.vue";
+import { REPORT_ID, BUFFER_SIZE } from "../../constants/hid";
+import { parseHIDError } from "../../helper/errors";
 
 defineProps({
   profiles: Array<ProfileModel>,
@@ -93,11 +95,16 @@ const clearProfileFromControllerMemory = (profile: ProfileModel, position: numbe
 
 const confirmClear = async () => {
   if (profileToClear.value && hidController.value && profileClearPosition.value !== -1) {
-    const bytes = new Uint8Array(64);
-    bytes[1] = 1 + profileClearPosition.value;
-    await hidController.value?.sendFeatureReport(0x68, bytes.slice(1, bytes.length));
-    getProfiles();
-    info(`Cleared "${profileToClear.value.getLabel()}" from controller memory`);
+    try {
+      const bytes = new Uint8Array(BUFFER_SIZE);
+      bytes[1] = 1 + profileClearPosition.value;
+      await hidController.value.sendFeatureReport(REPORT_ID.CLEAR_PROFILE, bytes.slice(1, bytes.length));
+      getProfiles();
+      info(`Cleared "${profileToClear.value.getLabel()}" from controller memory`);
+    } catch (err) {
+      const hidError = parseHIDError(err);
+      error(`Failed to clear profile: ${hidError.message}`);
+    }
   }
   showClearConfirm.value = false;
   profileToClear.value = null;

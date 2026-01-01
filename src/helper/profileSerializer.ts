@@ -2,9 +2,10 @@ import Profile from "../model/Profile";
 import Joystick from "../model/Joystick";
 import Trigger from "../model/Trigger";
 import ButtonMapping from "../model/ButtonMapping";
-import {ProfileButtonSelector} from "../enum/ProfileButtonSelector";
-import {PS5_JOYSTICK_CURVE} from "./bytesToProfile";
-import {generateId} from "./profileTools";
+import { ProfileButtonSelector } from "../enum/ProfileButtonSelector";
+import { PS5_JOYSTICK_CURVE } from "./bytesToProfile";
+import { generateId } from "./profileTools";
+import { devWarn } from "./errors";
 import JSZip from "jszip";
 
 const EXPORT_VERSION = "1.0";
@@ -70,17 +71,17 @@ export function jsonToProfile(data: ExportedProfile): Profile {
   const p = data.profile;
 
   if (!p.label || !p.leftJoystick || !p.rightJoystick ||
-      !p.leftTrigger || !p.rightTrigger || !p.buttonMapping) {
+    !p.leftTrigger || !p.rightTrigger || !p.buttonMapping) {
     throw new Error("Invalid profile format: missing required fields");
   }
 
   if (p.leftJoystick.profileId < 0 || p.leftJoystick.profileId > 5 ||
-      p.rightJoystick.profileId < 0 || p.rightJoystick.profileId > 5) {
+    p.rightJoystick.profileId < 0 || p.rightJoystick.profileId > 5) {
     throw new Error("Invalid joystick profile ID");
   }
 
   if (p.leftJoystick.curveValues.length !== 6 ||
-      p.rightJoystick.curveValues.length !== 6) {
+    p.rightJoystick.curveValues.length !== 6) {
     throw new Error("Invalid curve values: must have 6 values");
   }
 
@@ -89,9 +90,9 @@ export function jsonToProfile(data: ExportedProfile): Profile {
   }
 
   if (p.leftTrigger.min < 0 || p.leftTrigger.min > 255 ||
-      p.leftTrigger.max < 0 || p.leftTrigger.max > 255 ||
-      p.rightTrigger.min < 0 || p.rightTrigger.min > 255 ||
-      p.rightTrigger.max < 0 || p.rightTrigger.max > 255) {
+    p.leftTrigger.max < 0 || p.leftTrigger.max > 255 ||
+    p.rightTrigger.min < 0 || p.rightTrigger.min > 255 ||
+    p.rightTrigger.max < 0 || p.rightTrigger.max > 255) {
     throw new Error("Invalid trigger values: must be 0-255");
   }
 
@@ -230,18 +231,18 @@ export async function importProfilesFromZip(
       const metadataContent = await metadataFile.async("string");
       const metadata = JSON.parse(metadataContent) as BulkExportMetadata;
       if (metadata.version !== EXPORT_VERSION) {
-        console.warn(`ZIP version mismatch: expected ${EXPORT_VERSION}, got ${metadata.version}`);
+        devWarn(`ZIP version mismatch: expected ${EXPORT_VERSION}, got ${metadata.version}`);
       }
     } catch {
-      console.warn("Could not read metadata.json, continuing anyway");
+      devWarn("Could not read metadata.json, continuing anyway");
     }
   }
 
   const profilesFolder = zip.folder("profiles");
   const profileFiles = profilesFolder
     ? Object.keys(zip.files).filter(
-        (path) => path.startsWith("profiles/") && path.endsWith(".json")
-      )
+      (path) => path.startsWith("profiles/") && path.endsWith(".json")
+    )
     : Object.keys(zip.files).filter((path) => path.endsWith(".json") && path !== "metadata.json");
 
   const currentNames = [...existingNames];

@@ -17,6 +17,7 @@ import {inject, ref} from "vue";
 import type {Ref} from "vue";
 import Joystick from "../../model/Joystick";
 import Trigger from "../../model/Trigger";
+import StickDeadzone from "../../model/StickDeadzone";
 import ButtonMapping from "../../model/ButtonMapping";
 import {PS5_JOYSTICK_CURVE} from "../../helper/bytesToProfile";
 import {ProfileButtonSelector} from "../../enum/ProfileButtonSelector";
@@ -53,6 +54,8 @@ db.getAll().then((profiles: Array<ProfileModel>) => savedProfiles.value = profil
       joystickRight,
       new Trigger(profileEntry.leftTrigger.min, profileEntry.leftTrigger.max),
       new Trigger(profileEntry.rightTrigger.min, profileEntry.rightTrigger.max),
+      new StickDeadzone(profileEntry.leftStickDeadzone?.value ?? 0),
+      new StickDeadzone(profileEntry.rightStickDeadzone?.value ?? 0),
       new ButtonMapping(profileEntry.buttonMapping.buttons)
   )
 }));
@@ -169,6 +172,8 @@ const saveProfileLocally = (profile: ProfileModel) => {
     joystickRight,
     new Trigger(profile.getLeftTrigger().getMin(), profile.getLeftTrigger().getMax()),
     new Trigger(profile.getRightTrigger().getMin(), profile.getRightTrigger().getMax()),
+    new StickDeadzone(profile.getLeftStickDeadzone().getValue()),
+    new StickDeadzone(profile.getRightStickDeadzone().getValue()),
     new ButtonMapping([...profile.getButtonMapping().getButtons()]),
     ProfileButtonSelector.UNASSIGNED
   );

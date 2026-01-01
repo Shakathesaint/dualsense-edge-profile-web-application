@@ -10,6 +10,8 @@ relying on a console.
 
 This fork introduces the following enhancements over the original project:
 
+- 🎯 **Stick Deadzone Configuration** — Adjust the deadzone for left and right analog sticks (0-30%). The deadzone defines how far you must tilt the stick before input is recognized—useful for compensating stick drift or fine-tuning responsiveness.
+
 - 💾 **Local Profile Backup** — Save controller profiles to local browser storage (IndexedDB), overcoming the controller's 4-slot hardware limit. Store unlimited profiles locally for quick access.
 
 - 📄 **JSON Import/Export** — Export profiles to JSON files for backup and sharing with other users. Import profiles from JSON files with automatic validation to ensure data integrity.

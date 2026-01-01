@@ -4,6 +4,7 @@ import {Ref, ref, watch} from "vue";
 import Assignment from "./Configuration/Assignment.vue";
 import StickSensitivity from "./Configuration/StickSensitivity.vue";
 import TriggerDeadzone from "./Configuration/TriggerDeadzone.vue";
+import StickDeadzone from "./Configuration/StickDeadzone.vue";
 import LocalIndexDB from "../model/LocalIndexDB";
 import {inject} from "vue";
 import {useToast} from "../composables/useToast";
@@ -45,6 +46,12 @@ const applyExistingProfile = (e: any) => {
     copyProfile.value.getLeftTrigger().setMax(foundProfile.leftTrigger.max);
     copyProfile.value.getRightTrigger().setMin(foundProfile.rightTrigger.min);
     copyProfile.value.getRightTrigger().setMax(foundProfile.rightTrigger.max);
+    if (foundProfile.leftStickDeadzone) {
+      copyProfile.value.getLeftStickDeadzone().setValue(foundProfile.leftStickDeadzone.value);
+    }
+    if (foundProfile.rightStickDeadzone) {
+      copyProfile.value.getRightStickDeadzone().setValue(foundProfile.rightStickDeadzone.value);
+    }
     copyProfile.value.getButtonMapping().setButtons(foundProfile.buttonMapping.buttons);
   });
 }
@@ -92,7 +99,8 @@ watch(props, data => {
       <span @click="changeTabIndex(0)" :class="isActive(0)" class="tab">Button Assignments</span>
       <span @click="changeTabIndex(1)" :class="isActive(1)" class="tab">Stick Sensitivity</span>
       <span @click="changeTabIndex(2)" :class="isActive(2)" class="tab">Trigger Deadzone</span>
-      <span @click="changeTabIndex(3)" :class="isActive(3)" class="tab">Other</span>
+      <span @click="changeTabIndex(3)" :class="isActive(3)" class="tab">Stick Deadzone</span>
+      <span @click="changeTabIndex(4)" :class="isActive(4)" class="tab">Other</span>
     </section>
     <section class="configuration-setting-container">
       <Assignment
@@ -108,6 +116,11 @@ watch(props, data => {
           v-if="isActive(2).active"
           :right-trigger="copyProfile.getRightTrigger()"
           :left-trigger="copyProfile.getLeftTrigger()"
+      />
+      <StickDeadzone
+          v-if="isActive(3).active"
+          :left-stick-deadzone="copyProfile.getLeftStickDeadzone()"
+          :right-stick-deadzone="copyProfile.getRightStickDeadzone()"
       />
     </section>
   </section>

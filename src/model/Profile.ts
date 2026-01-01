@@ -1,5 +1,6 @@
 import Joystick from "./Joystick";
 import Trigger from "./Trigger";
+import StickDeadzone from "./StickDeadzone";
 import {ProfileButtonSelector} from "../enum/ProfileButtonSelector";
 import ButtonMapping from "./ButtonMapping";
 
@@ -14,6 +15,9 @@ export default class Profile {
     private leftTrigger: Trigger;
     private rightTrigger: Trigger;
 
+    private leftStickDeadzone: StickDeadzone;
+    private rightStickDeadzone: StickDeadzone;
+
     private buttonMapping: ButtonMapping;
 
     private profileButtonSelector: ProfileButtonSelector;
@@ -25,6 +29,8 @@ export default class Profile {
         rightJoystick: Joystick,
         leftTrigger: Trigger,
         rightTrigger: Trigger,
+        leftStickDeadzone: StickDeadzone,
+        rightStickDeadzone: StickDeadzone,
         buttonMapping: ButtonMapping,
         profileButtonSelector: ProfileButtonSelector = ProfileButtonSelector.UNASSIGNED
     ) {
@@ -34,6 +40,8 @@ export default class Profile {
         this.rightJoystick = rightJoystick;
         this.leftTrigger = leftTrigger;
         this.rightTrigger = rightTrigger;
+        this.leftStickDeadzone = leftStickDeadzone;
+        this.rightStickDeadzone = rightStickDeadzone;
         this.buttonMapping = buttonMapping;
         this.profileButtonSelector = profileButtonSelector;
     }
@@ -84,6 +92,22 @@ export default class Profile {
 
     setRightTrigger(value: Trigger) {
         this.rightTrigger = value;
+    }
+
+    getLeftStickDeadzone(): StickDeadzone {
+        return this.leftStickDeadzone;
+    }
+
+    setLeftStickDeadzone(value: StickDeadzone) {
+        this.leftStickDeadzone = value;
+    }
+
+    getRightStickDeadzone(): StickDeadzone {
+        return this.rightStickDeadzone;
+    }
+
+    setRightStickDeadzone(value: StickDeadzone) {
+        this.rightStickDeadzone = value;
     }
 
     getButtonMapping(): ButtonMapping {

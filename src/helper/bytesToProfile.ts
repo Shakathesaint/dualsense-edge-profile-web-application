@@ -3,6 +3,7 @@ import Joystick from "../model/Joystick";
 import { JoystickProfileId } from "../enum/JoystickProfileId";
 import JoystickCurve from "../model/JoystickCurve";
 import Trigger from "../model/Trigger";
+import StickDeadzone from "../model/StickDeadzone";
 import { ProfileButtonSelector } from "../enum/ProfileButtonSelector";
 import { arrayCRC32Le, arrayCRC32LeBLE } from "./CRC32";
 import ButtonMapping from "../model/ButtonMapping";
@@ -161,6 +162,8 @@ export function bytesArrayToProfile(bytesArray: Array<Array<number>>): Profile {
         new Joystick(PS5_JOYSTICK_CURVE[bytesArray[2][32]].getProfileId(), PS5_JOYSTICK_CURVE[bytesArray[2][32]].getAdjustments(), PS5_JOYSTICK_CURVE[bytesArray[2][32]].getModifier()),
         new Trigger(bytesArray[2][4], bytesArray[2][5]),
         new Trigger(bytesArray[2][6], bytesArray[2][7]),
+        new StickDeadzone(bytesArray[1][45]),
+        new StickDeadzone(bytesArray[1][54]),
         new ButtonMapping(bytesArray[2].slice(10, 26)),
         // @ts-ignore
         assignmentDictionary[bytesArray[0][0]]
@@ -229,6 +232,37 @@ export function profileToBytes(profile: Profile): Array<Uint8Array> {
     buffers[2][5] = profile.getLeftTrigger().getMax();
     buffers[2][6] = profile.getRightTrigger().getMin();
     buffers[2][7] = profile.getRightTrigger().getMax();
+
+    // Stick deadzone values in Buffer 1
+    const leftDeadzone = profile.getLeftStickDeadzone().getValue();
+    const rightDeadzone = profile.getRightStickDeadzone().getValue();
+
+    buffers[1][45] = leftDeadzone;
+    buffers[1][54] = rightDeadzone;
+
+    // Apply deadzone interpolation to curve values
+    // Formula: NewValue = BaseValue + Round(Deadzone * (255 - BaseValue) / 255)
+    // Left stick curve values are at bytes 47-52, right stick at 56-59 + buffer2[2-3]
+    if (leftDeadzone > 0) {
+        for (let i = 47; i < 53; i++) {
+            const baseValue = buffers[1][i];
+            const increment = Math.round(leftDeadzone * (255 - baseValue) / 255);
+            buffers[1][i] = Math.min(255, baseValue + increment);
+        }
+    }
+    if (rightDeadzone > 0) {
+        for (let i = 56; i < 60; i++) {
+            const baseValue = buffers[1][i];
+            const increment = Math.round(rightDeadzone * (255 - baseValue) / 255);
+            buffers[1][i] = Math.min(255, baseValue + increment);
+        }
+        // Also update the last 2 bytes in buffer 2
+        for (let i = 2; i < 4; i++) {
+            const baseValue = buffers[2][i];
+            const increment = Math.round(rightDeadzone * (255 - baseValue) / 255);
+            buffers[2][i] = Math.min(255, baseValue + increment);
+        }
+    }
 
     buffers[2].set(profile.getButtonMapping().getButtons(), 10);
 

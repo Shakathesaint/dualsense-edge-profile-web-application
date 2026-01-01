@@ -1,6 +1,7 @@
 import Profile from "../model/Profile";
 import Joystick from "../model/Joystick";
 import Trigger from "../model/Trigger";
+import StickDeadzone from "../model/StickDeadzone";
 import ButtonMapping from "../model/ButtonMapping";
 import { ProfileButtonSelector } from "../enum/ProfileButtonSelector";
 import { PS5_JOYSTICK_CURVE } from "./bytesToProfile";
@@ -21,6 +22,10 @@ export interface ExportedTrigger {
   max: number;
 }
 
+export interface ExportedStickDeadzone {
+  value: number;
+}
+
 export interface ExportedProfile {
   version: string;
   exportedAt: string;
@@ -30,6 +35,8 @@ export interface ExportedProfile {
     rightJoystick: ExportedJoystick;
     leftTrigger: ExportedTrigger;
     rightTrigger: ExportedTrigger;
+    leftStickDeadzone?: ExportedStickDeadzone;
+    rightStickDeadzone?: ExportedStickDeadzone;
     buttonMapping: number[];
   };
 }
@@ -57,6 +64,12 @@ export function profileToJSON(profile: Profile): ExportedProfile {
       rightTrigger: {
         min: profile.getRightTrigger().getMin(),
         max: profile.getRightTrigger().getMax()
+      },
+      leftStickDeadzone: {
+        value: profile.getLeftStickDeadzone().getValue()
+      },
+      rightStickDeadzone: {
+        value: profile.getRightStickDeadzone().getValue()
       },
       buttonMapping: [...profile.getButtonMapping().getButtons()]
     }
@@ -96,6 +109,15 @@ export function jsonToProfile(data: ExportedProfile): Profile {
     throw new Error("Invalid trigger values: must be 0-255");
   }
 
+  // Validate stick deadzone if present (backward compatibility: optional)
+  // Values are stored as bytes (0-255), where 255 = 100%
+  if (p.leftStickDeadzone && (p.leftStickDeadzone.value < 0 || p.leftStickDeadzone.value > 255)) {
+    throw new Error("Invalid left stick deadzone: must be 0-255");
+  }
+  if (p.rightStickDeadzone && (p.rightStickDeadzone.value < 0 || p.rightStickDeadzone.value > 255)) {
+    throw new Error("Invalid right stick deadzone: must be 0-255");
+  }
+
   const leftJoystick = new Joystick(
     p.leftJoystick.profileId,
     PS5_JOYSTICK_CURVE[p.leftJoystick.profileId].getAdjustments(),
@@ -117,6 +139,8 @@ export function jsonToProfile(data: ExportedProfile): Profile {
     rightJoystick,
     new Trigger(p.leftTrigger.min, p.leftTrigger.max),
     new Trigger(p.rightTrigger.min, p.rightTrigger.max),
+    new StickDeadzone(p.leftStickDeadzone?.value ?? 0),
+    new StickDeadzone(p.rightStickDeadzone?.value ?? 0),
     new ButtonMapping(p.buttonMapping),
     ProfileButtonSelector.UNASSIGNED
   );

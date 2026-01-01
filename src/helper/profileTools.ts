@@ -2,6 +2,7 @@ import Profile from "../model/Profile";
 import Joystick from "../model/Joystick";
 import {PS5_JOYSTICK_CURVE} from "./bytesToProfile";
 import Trigger from "../model/Trigger";
+import StickDeadzone from "../model/StickDeadzone";
 import ButtonMapping from "../model/ButtonMapping";
 import {ProfileButtonSelector} from "../enum/ProfileButtonSelector";
 
@@ -24,6 +25,8 @@ export function assembleBlankProfile(label: string = "Unnamed"): Profile {
         joystick_r,
         new Trigger(0, 0xFF),
         new Trigger(0, 0xFF),
+        new StickDeadzone(0),
+        new StickDeadzone(0),
         new ButtonMapping(new Array(16).fill(0).map((_, index) => index),
         )
     );

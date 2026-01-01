@@ -2,7 +2,7 @@
 import ProfileOverview from "./components/profile/ProfileOverview.vue";
 import Configurator from "./components/Configurator.vue";
 import {provide, Ref, ref} from "vue";
-import {bytesArrayToProfile, profileToBytes} from "./helper/bytesToProfile";
+import {bytesArrayToProfile, profileToBytes, validateProfileReports} from "./helper/bytesToProfile";
 import Profile from "./model/Profile";
 import {arrayCRC32LeBLE} from "./helper/CRC32";
 import LocalIndexDB from "./model/LocalIndexDB";
@@ -31,7 +31,7 @@ const getProfiles = async () => {
   if (!edgeHIDController.value) return;
 
   try {
-    let profileCollector: Array<Array<Array<number>>> = [[]];
+    let profileCollector: Array<Array<Uint8Array>> = [[]];
     let cIndex = 0;
 
     for (let i = REPORT_ID.PROFILE_START; i < REPORT_ID.PROFILE_END; i++) {
@@ -39,13 +39,23 @@ const getProfiles = async () => {
         profileCollector.push([]);
       }
       const data: DataView = await edgeHIDController.value.receiveFeatureReport(i);
-      profileCollector[profileCollector.length - 1].push(Array.from(new Uint8Array(data.buffer)));
+      const reportBytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+      profileCollector[profileCollector.length - 1].push(reportBytes);
       cIndex++;
     }
 
     const foundProfiles: Array<Profile> = [];
-    profileCollector.forEach((profile: number[][]) => {
-      foundProfiles.push(bytesArrayToProfile(profile));
+    profileCollector.forEach((profileReports: Uint8Array[], profileIndex: number) => {
+      if (!profileReports.length) {
+        return;
+      }
+      const validationError = validateProfileReports(profileReports, profileIndex);
+      if (validationError) {
+        showError(validationError);
+        return;
+      }
+      const profileData = profileReports.map(report => Array.from(report));
+      foundProfiles.push(bytesArrayToProfile(profileData));
     });
     profiles.value = foundProfiles;
   } catch (err) {

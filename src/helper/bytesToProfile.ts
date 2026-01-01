@@ -4,8 +4,9 @@ import { JoystickProfileId } from "../enum/JoystickProfileId";
 import JoystickCurve from "../model/JoystickCurve";
 import Trigger from "../model/Trigger";
 import { ProfileButtonSelector } from "../enum/ProfileButtonSelector";
-import { arrayCRC32Le } from "./CRC32";
+import { arrayCRC32Le, arrayCRC32LeBLE } from "./CRC32";
 import ButtonMapping from "../model/ButtonMapping";
+import { BUFFER_SIZE, CRC32_REPORT_PREFIX, REPORT_ID } from "../constants/hid";
 
 export const PS5_JOYSTICK_CURVE = [
     new Joystick(JoystickProfileId.DEFAULT, [
@@ -58,6 +59,51 @@ export const PS5_JOYSTICK_CURVE = [
     ], 0x03),
 ];
 
+const REPORT_CRC_LENGTH = 4;
+
+const normalizeCrcBytes = (crcBytes: number[]): number[] => {
+    const normalized = new Array(REPORT_CRC_LENGTH).fill(0);
+    for (let i = 0; i < Math.min(crcBytes.length, REPORT_CRC_LENGTH); i++) {
+        normalized[i] = crcBytes[i];
+    }
+    return normalized;
+};
+
+const computeReportCrc = (report: Uint8Array): number[] => {
+    const payload = report.slice();
+    payload.fill(0, payload.length - REPORT_CRC_LENGTH);
+    const crcBytes = arrayCRC32LeBLE(new Uint8Array([CRC32_REPORT_PREFIX, ...payload]));
+    return normalizeCrcBytes(crcBytes);
+};
+
+export function validateProfileReports(reports: Uint8Array[], profileIndex: number): string | null {
+    if (reports.length !== REPORT_ID.REPORTS_PER_PROFILE) {
+        return `Profile ${profileIndex + 1}: expected ${REPORT_ID.REPORTS_PER_PROFILE} reports, got ${reports.length}`;
+    }
+
+    for (let i = 0; i < reports.length; i++) {
+        const report = reports[i];
+
+        if (report.length !== BUFFER_SIZE) {
+            return `Profile ${profileIndex + 1} report ${i + 1}: expected ${BUFFER_SIZE} bytes, got ${report.length}`;
+        }
+
+        if (report.length < REPORT_CRC_LENGTH) {
+            return `Profile ${profileIndex + 1} report ${i + 1}: report too short for CRC`;
+        }
+
+        const expectedCrc = computeReportCrc(report);
+        const actualCrc = Array.from(report.slice(report.length - REPORT_CRC_LENGTH));
+        const matches = expectedCrc.every((byte, index) => byte === actualCrc[index]);
+
+        if (!matches) {
+            return `Profile ${profileIndex + 1} report ${i + 1}: CRC mismatch`;
+        }
+    }
+
+    return null;
+}
+
 export function bytesArrayToProfile(bytesArray: Array<Array<number>>): Profile {
 
     const unassignedProfile: boolean = bytesArray[0][1] === 16;
@@ -94,7 +140,7 @@ export function bytesArrayToProfile(bytesArray: Array<Array<number>>): Profile {
         rightJoystickCurrentCurveValues = bytesArray[1].slice(56, 60);
         rightJoystickCurrentCurveValues.push(...bytesArray[2].slice(2, 4));
 
-        id = new Array(16).fill(0, 0).map(() => Math.floor(Math.random() * 255), 28).join();
+        id = bytesArray[1].slice(28, 44).join();
     } else {
         label = "Unassigned";
         leftJoystickCurrentCurveValues = [128, 128, 196, 196, 225, 225];
@@ -105,7 +151,7 @@ export function bytesArrayToProfile(bytesArray: Array<Array<number>>): Profile {
         bytesArray[2][5] = 0xFF;
         bytesArray[2][7] = 0xFF;
 
-        id = bytesArray.splice(28, 44).join();
+        id = bytesArray[1].slice(28, 44).join();
     }
 
     const profile = new Profile(

@@ -86,7 +86,7 @@ const drawCurve = (ctx: CanvasRenderingContext2D, joystick: Joystick, testProgre
   ctx.closePath();
 }
 
-const readInput = (e: HIDInputReportEvent) => {
+const readInput = (e: any) => {
   const inputStream = new Uint8Array(e.data.buffer);
   let maxInputLeft = Math.max(inputStream[0], inputStream[1]) - 128;
   let maxInputRight = Math.max(inputStream[2], inputStream[3]) - 128;

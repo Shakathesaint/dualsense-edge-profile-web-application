@@ -6,9 +6,13 @@ import {bytesArrayToProfile, profileToBytes} from "./helper/bytesToProfile";
 import Profile from "./model/Profile";
 import {arrayCRC32LeBLE} from "./helper/CRC32";
 import LocalIndexDB from "./model/LocalIndexDB";
+import ToastContainer from "./components/ui/ToastContainer.vue";
+import {useToast} from "./composables/useToast";
 
 const db = new LocalIndexDB('ds-edge-profiles');
 provide('db', db);
+
+const { success } = useToast();
 
 let edgeHIDController: Ref<HIDDevice | undefined> = ref();
 provide('HIDController', edgeHIDController);
@@ -45,7 +49,7 @@ const getProfiles = async () => {
 provide('getProfiles', getProfiles);
 
 const getDevice = () => {
-  navigator.hid.requestDevice({filters: [FILTERS]}).then(devices => {
+  navigator.hid!.requestDevice({filters: [FILTERS]}).then(devices => {
     const controller = devices[0];
 
     controller.open().then(() => {
@@ -55,7 +59,7 @@ const getDevice = () => {
   });
 }
 
-navigator.hid.addEventListener("connect", ({device}) => {
+navigator.hid!.addEventListener("connect", ({device}) => {
   if (device.productId === FILTERS.productId && device.vendorId === FILTERS.vendorId) {
     device.open().then(() => {
       edgeHIDController.value = device;
@@ -64,7 +68,7 @@ navigator.hid.addEventListener("connect", ({device}) => {
   }
 });
 
-navigator.hid.addEventListener("disconnect", ({device}) => {
+navigator.hid!.addEventListener("disconnect", ({device}) => {
   if (device.productId === FILTERS.productId && device.vendorId === FILTERS.vendorId) {
     edgeHIDController.value = undefined;
     selectedProfile.value = null;
@@ -72,7 +76,7 @@ navigator.hid.addEventListener("disconnect", ({device}) => {
   }
 });
 
-navigator.hid.getDevices().then(devices => {
+navigator.hid!.getDevices().then(devices => {
   if (devices.length) {
     devices.forEach(device => {
       if (device.productId === FILTERS.productId && device.vendorId === FILTERS.vendorId) {
@@ -102,13 +106,14 @@ const saveProfile = (newProfile: Profile) => {
 
       await edgeHIDController.value?.sendFeatureReport(ident, bytes.slice(1, bytes.length));
     });
-    alert(`Profile "${newProfile.getLabel()}" is set to controller`);
+    success(`Profile "${newProfile.getLabel()}" is set to controller`);
   }
 }
 
 </script>
 
 <template>
+  <ToastContainer />
   <section v-if="!edgeHIDController" class="connect-controller-container">
     <section class="connect-controller-content">
       <h3 class="connect-controller-header">DualSense Edge controller not detected!</h3>

@@ -15,13 +15,29 @@ defineProps({
 <template>
   <section>
     <h3>Left trigger</h3>
-    <p>Min:</p><input type="range" :value="leftTrigger.getMin()" @change="(e: any) => leftTrigger.setMin(e.target.value)" min="0" max="255">
-    <p>Max:</p><input type="range" :value="leftTrigger.getMax()" @change="(e: any) => leftTrigger.setMax(e.target.value)" min="0" max="255">
+    <div class="control-row">
+      <span class="label">Min:</span>
+      <input type="range" :value="leftTrigger.getMin()" @change="(e: any) => leftTrigger.setMin(e.target.value)" min="0" max="255">
+      <span class="value-label">{{ leftTrigger.getMin() }}</span>
+    </div>
+    <div class="control-row">
+      <span class="label">Max:</span>
+      <input type="range" :value="leftTrigger.getMax()" @change="(e: any) => leftTrigger.setMax(e.target.value)" min="0" max="255">
+      <span class="value-label">{{ leftTrigger.getMax() }}</span>
+    </div>
   </section>
   <section>
     <h3>Right trigger</h3>
-    <p>Min:</p><input type="range" :value="rightTrigger.getMin()" @change="(e: any) => rightTrigger.setMin(e.target.value)" min="0" max="255">
-    <p>Max:</p><input type="range" :value="rightTrigger.getMax()" @change="(e: any) => rightTrigger.setMax(e.target.value)" min="0" max="255">
+    <div class="control-row">
+      <span class="label">Min:</span>
+      <input type="range" :value="rightTrigger.getMin()" @change="(e: any) => rightTrigger.setMin(e.target.value)" min="0" max="255">
+      <span class="value-label">{{ rightTrigger.getMin() }}</span>
+    </div>
+    <div class="control-row">
+      <span class="label">Max:</span>
+      <input type="range" :value="rightTrigger.getMax()" @change="(e: any) => rightTrigger.setMax(e.target.value)" min="0" max="255">
+      <span class="value-label">{{ rightTrigger.getMax() }}</span>
+    </div>
   </section>
 </template>
 <style scoped>
@@ -36,10 +52,24 @@ h3 {
   margin-bottom: 16px;
 }
 
-p {
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.label {
+  width: 40px;
   color: var(--text-secondary);
   font-size: 0.9rem;
-  margin: 12px 0 4px 0;
+}
+
+.value-label {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  min-width: 30px;
 }
 
 input[type="range"] {

@@ -113,84 +113,94 @@ onUnmounted(() => {
     <div class="canvasContainer">
       <canvas ref="leftStickCurveCanvas" class="curve"></canvas>
     </div>
-    <select
-        v-bind:value="leftJoystick.getProfileId()"
-        @change="(e: any) => {
-          leftJoystick.setProfileId(e.target.value);
-          leftJoystick.setModifier(PS5_JOYSTICK_CURVE[e.target.value].getModifier());
-          leftJoystick.setCurveValues(PS5_JOYSTICK_CURVE[leftJoystick.getProfileId()].getAdjustments().map(curve => curve.getByIndex(5)));
-          leftJoystickRange.disabled = Number(leftJoystick.getProfileId()) === JoystickProfileId.DEFAULT
-      }"
-    >
-      <option :value="JoystickProfileId.DEFAULT">
-        Default
-      </option>
-      <option :value="JoystickProfileId.QUICK">
-        Quick
-      </option>
-      <option :value="JoystickProfileId.PRECISE">
-        Precise
-      </option>
-      <option :value="JoystickProfileId.STEADY">
-        Steady
-      </option>
-      <option :value="JoystickProfileId.DIGITAL">
-        Digital
-      </option>
-      <option :value="JoystickProfileId.DYNAMIC">
-        Dynamic
-      </option>
-    </select>
-    <input type="range"
-           @input="e => changeJoyStickIndex(leftJoystick, e)"
-           :value="getCurrentCurve(leftJoystick)"
-           min="0"
-           max="10"
-           :disabled="leftJoystick.getProfileId() === JoystickProfileId.DEFAULT"
-           ref="leftJoystickRange"
-    >
+    <div class="controls-row">
+      <select
+          v-bind:value="leftJoystick.getProfileId()"
+          @change="(e: any) => {
+            leftJoystick.setProfileId(e.target.value);
+            leftJoystick.setModifier(PS5_JOYSTICK_CURVE[e.target.value].getModifier());
+            leftJoystick.setCurveValues(PS5_JOYSTICK_CURVE[leftJoystick.getProfileId()].getAdjustments().map(curve => curve.getByIndex(5)));
+            leftJoystickRange.disabled = Number(leftJoystick.getProfileId()) === JoystickProfileId.DEFAULT
+        }"
+      >
+        <option :value="JoystickProfileId.DEFAULT">
+          Default
+        </option>
+        <option :value="JoystickProfileId.QUICK">
+          Quick
+        </option>
+        <option :value="JoystickProfileId.PRECISE">
+          Precise
+        </option>
+        <option :value="JoystickProfileId.STEADY">
+          Steady
+        </option>
+        <option :value="JoystickProfileId.DIGITAL">
+          Digital
+        </option>
+        <option :value="JoystickProfileId.DYNAMIC">
+          Dynamic
+        </option>
+      </select>
+      <div class="slider-container">
+        <input type="range"
+               @input="e => changeJoyStickIndex(leftJoystick, e)"
+               :value="getCurrentCurve(leftJoystick)"
+               min="0"
+               max="10"
+               :disabled="leftJoystick.getProfileId() === JoystickProfileId.DEFAULT"
+               ref="leftJoystickRange"
+        >
+        <span class="value-label">{{ getCurrentCurve(leftJoystick) }}</span>
+      </div>
+    </div>
   </section>
   <section>
     <h3>Right stick</h3>
     <div class="canvasContainer">
       <canvas ref="rightStickCurveCanvas" class="curve"></canvas>
     </div>
-    <select
-        v-bind:value="rightJoystick.getProfileId()"
-        @change="(e: any) => {
-          rightJoystick.setProfileId(e.target.value);
-          rightJoystick.setModifier(PS5_JOYSTICK_CURVE[e.target.value].getModifier());
-          rightJoystick.setCurveValues(PS5_JOYSTICK_CURVE[rightJoystick.getProfileId()].getAdjustments().map(curve => curve.getByIndex(5)));
-          rightJoystickRange.disabled = Number(rightJoystick.getProfileId()) === JoystickProfileId.DEFAULT
-      }"
-    >
-      <option :value="JoystickProfileId.DEFAULT">
-        Default
-      </option>
-      <option :value="JoystickProfileId.QUICK">
-        Quick
-      </option>
-      <option :value="JoystickProfileId.PRECISE">
-        Precise
-      </option>
-      <option :value="JoystickProfileId.STEADY">
-        Steady
-      </option>
-      <option :value="JoystickProfileId.DIGITAL">
-        Digital
-      </option>
-      <option :value="JoystickProfileId.DYNAMIC">
-        Dynamic
-      </option>
-    </select>
-    <input type="range"
-           @input="(e: any) => changeJoyStickIndex(rightJoystick, e)"
-           :value="getCurrentCurve(rightJoystick)"
-           min="0"
-           max="10"
-           :disabled="rightJoystick.getProfileId() === JoystickProfileId.DEFAULT"
-           ref="rightJoystickRange"
-    >
+    <div class="controls-row">
+      <select
+          v-bind:value="rightJoystick.getProfileId()"
+          @change="(e: any) => {
+            rightJoystick.setProfileId(e.target.value);
+            rightJoystick.setModifier(PS5_JOYSTICK_CURVE[e.target.value].getModifier());
+            rightJoystick.setCurveValues(PS5_JOYSTICK_CURVE[rightJoystick.getProfileId()].getAdjustments().map(curve => curve.getByIndex(5)));
+            rightJoystickRange.disabled = Number(rightJoystick.getProfileId()) === JoystickProfileId.DEFAULT
+        }"
+      >
+        <option :value="JoystickProfileId.DEFAULT">
+          Default
+        </option>
+        <option :value="JoystickProfileId.QUICK">
+          Quick
+        </option>
+        <option :value="JoystickProfileId.PRECISE">
+          Precise
+        </option>
+        <option :value="JoystickProfileId.STEADY">
+          Steady
+        </option>
+        <option :value="JoystickProfileId.DIGITAL">
+          Digital
+        </option>
+        <option :value="JoystickProfileId.DYNAMIC">
+          Dynamic
+        </option>
+      </select>
+      <div class="slider-container">
+        <input type="range"
+               @input="(e: any) => changeJoyStickIndex(rightJoystick, e)"
+               :value="getCurrentCurve(rightJoystick)"
+               min="0"
+               max="10"
+               :disabled="rightJoystick.getProfileId() === JoystickProfileId.DEFAULT"
+               ref="rightJoystickRange"
+        >
+        <span class="value-label">{{ getCurrentCurve(rightJoystick) }}</span>
+      </div>
+    </div>
   </section>
 </template>
 <style scoped>
@@ -234,6 +244,26 @@ h3 {
   display: block;
 }
 
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.value-label {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  min-width: 24px;
+}
+
 select {
   background-color: var(--bg-input);
   border: 1px solid var(--border-primary);
@@ -241,7 +271,6 @@ select {
   color: var(--text-primary);
   padding: 8px 12px;
   font-size: 0.9rem;
-  margin-right: 16px;
   min-width: 120px;
 }
 
@@ -259,7 +288,6 @@ input[type="range"] {
   background: var(--bg-card-hover);
   border-radius: 3px;
   outline: none;
-  margin-top: 8px;
 }
 
 input[type="range"]::-webkit-slider-thumb {

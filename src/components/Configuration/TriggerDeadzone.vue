@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Trigger from "../../model/Trigger.ts";
+import {byteToPercent} from "../../helper/converters";
 
 defineProps({
   leftTrigger: {
@@ -18,12 +19,12 @@ defineProps({
     <div class="control-row">
       <span class="label">Min:</span>
       <input type="range" :value="leftTrigger.getMin()" @input="(e: any) => leftTrigger.setMin(e.target.value)" min="0" max="255">
-      <span class="value-label">{{ Math.round(leftTrigger.getMin() * 100 / 255) }}</span>
+      <span class="value-label">{{ byteToPercent(leftTrigger.getMin()) }}</span>
     </div>
     <div class="control-row">
       <span class="label">Max:</span>
       <input type="range" :value="leftTrigger.getMax()" @input="(e: any) => leftTrigger.setMax(e.target.value)" min="0" max="255">
-      <span class="value-label">{{ Math.round(leftTrigger.getMax() * 100 / 255) }}</span>
+      <span class="value-label">{{ byteToPercent(leftTrigger.getMax()) }}</span>
     </div>
   </section>
   <section>
@@ -31,12 +32,12 @@ defineProps({
     <div class="control-row">
       <span class="label">Min:</span>
       <input type="range" :value="rightTrigger.getMin()" @input="(e: any) => rightTrigger.setMin(e.target.value)" min="0" max="255">
-      <span class="value-label">{{ Math.round(rightTrigger.getMin() * 100 / 255) }}</span>
+      <span class="value-label">{{ byteToPercent(rightTrigger.getMin()) }}</span>
     </div>
     <div class="control-row">
       <span class="label">Max:</span>
       <input type="range" :value="rightTrigger.getMax()" @input="(e: any) => rightTrigger.setMax(e.target.value)" min="0" max="255">
-      <span class="value-label">{{ Math.round(rightTrigger.getMax() * 100 / 255) }}</span>
+      <span class="value-label">{{ byteToPercent(rightTrigger.getMax()) }}</span>
     </div>
   </section>
 </template>

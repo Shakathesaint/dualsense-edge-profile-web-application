@@ -105,7 +105,7 @@ watch(props, data => {
     <section class="configuration-setting-container">
       <Assignment
           v-if="isActive(0).active"
-          :buttonMappping="copyProfile.getButtonMapping()"
+          :profile="copyProfile"
       />
       <StickSensitivity
           v-if="isActive(1).active"

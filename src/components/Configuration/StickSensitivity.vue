@@ -5,6 +5,8 @@ import {PS5_JOYSTICK_CURVE} from "../../helper/bytesToProfile";
 import {onMounted, ref, inject, onUnmounted} from "vue";
 import type {Ref} from "vue";
 
+import {getCurrentCurveIndex} from "../../helper/converters";
+
 const props = defineProps({
   leftJoystick: {
     type: Joystick,
@@ -23,21 +25,11 @@ const rightJoystickRange = ref();
 
 const edgeHIDController: Ref<HIDDevice> = inject('HIDController')!;
 
-const getCurrentCurve = (joystick: Joystick): number => {
-  let indexCurve: number;
-
-  for (indexCurve = 0; indexCurve <= 10; indexCurve++) {
-    let arrAdjustments = PS5_JOYSTICK_CURVE[joystick.getProfileId()].getAdjustments().map(curve => curve.getByIndex(indexCurve));
-    if (arrAdjustments.toString() === joystick.getCurveValues().toString()) break;
-  }
-
-  return Math.min(indexCurve, 10); // Clamp to valid range
-}
-
 const changeJoyStickIndex = (joystick: Joystick, event: Event) => {
   const sliderValue = Number((event.target as HTMLInputElement).value);
   joystick.setCurveValues(PS5_JOYSTICK_CURVE[joystick.getProfileId()].getAdjustments().map(curve => curve.getByIndex(sliderValue)));
 }
+
 
 const drawCurve = (ctx: CanvasRenderingContext2D, joystick: Joystick, testProgress: number) => {
 
@@ -145,13 +137,13 @@ onUnmounted(() => {
       <div class="slider-container">
         <input type="range"
                @input="e => changeJoyStickIndex(leftJoystick, e)"
-               :value="getCurrentCurve(leftJoystick)"
+               :value="getCurrentCurveIndex(leftJoystick)"
                min="0"
                max="10"
                :disabled="leftJoystick.getProfileId() === JoystickProfileId.DEFAULT"
                ref="leftJoystickRange"
         >
-        <span class="value-label">{{ (getCurrentCurve(leftJoystick) - 5) > 0 ? '+' : '' }}{{ getCurrentCurve(leftJoystick) - 5 }}</span>
+        <span class="value-label">{{ (getCurrentCurveIndex(leftJoystick) - 5) > 0 ? '+' : '' }}{{ getCurrentCurveIndex(leftJoystick) - 5 }}</span>
       </div>
     </div>
   </section>
@@ -192,13 +184,13 @@ onUnmounted(() => {
       <div class="slider-container">
         <input type="range"
                @input="(e: any) => changeJoyStickIndex(rightJoystick, e)"
-               :value="getCurrentCurve(rightJoystick)"
+               :value="getCurrentCurveIndex(rightJoystick)"
                min="0"
                max="10"
                :disabled="rightJoystick.getProfileId() === JoystickProfileId.DEFAULT"
                ref="rightJoystickRange"
         >
-        <span class="value-label">{{ (getCurrentCurve(rightJoystick) - 5) > 0 ? '+' : '' }}{{ getCurrentCurve(rightJoystick) - 5 }}</span>
+        <span class="value-label">{{ (getCurrentCurveIndex(rightJoystick) - 5) > 0 ? '+' : '' }}{{ getCurrentCurveIndex(rightJoystick) - 5 }}</span>
       </div>
     </div>
   </section>

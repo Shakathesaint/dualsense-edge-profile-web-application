@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import StickDeadzoneModel from "../../model/StickDeadzone.ts";
+import {byteToPercent, percentToByte} from "../../helper/converters";
 
 const props = defineProps({
   leftStickDeadzone: {
@@ -11,15 +12,6 @@ const props = defineProps({
     required: true,
   },
 });
-
-// Conversion functions: byte (0-255) <-> percentage (0-100)
-const byteToPercent = (byteValue: number): number => {
-  return Math.round(byteValue * 100 / 255);
-};
-
-const percentToByte = (percent: number): number => {
-  return Math.round(percent * 255 / 100);
-};
 
 const onLeftChange = (e: Event) => {
   const target = e.target as HTMLInputElement;

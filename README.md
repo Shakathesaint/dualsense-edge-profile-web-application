@@ -24,6 +24,8 @@ This fork introduces the following enhancements over the original project:
 
 - 🔧 **Sensitivity Curve Save Fix** — Fixed a critical bug where certain slider combinations (e.g., both sticks at neutral position) would not persist after saving. The original implementation had hardcoded bytes overriding profile data and a CRC calculation issue. See [technical details](docs/sensitivity-curve-fix.md).
 
+- 👁️ **Enhanced Button Assignments View** — The Button Assignments screen now displays a complete profile summary with info cards showing stick sensitivity curves, deadzones, and trigger input ranges. Button remappings are shown in dedicated side panels, with a back-view of the controller for paddle visibility.
+
 ### 📲 Install as App
 
 This application can be installed as a standalone app on your device:

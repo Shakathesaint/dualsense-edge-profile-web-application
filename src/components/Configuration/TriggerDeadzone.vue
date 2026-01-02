@@ -18,12 +18,12 @@ defineProps({
     <div class="control-row">
       <span class="label">Min:</span>
       <input type="range" :value="leftTrigger.getMin()" @change="(e: any) => leftTrigger.setMin(e.target.value)" min="0" max="255">
-      <span class="value-label">{{ leftTrigger.getMin() }}</span>
+      <span class="value-label">{{ Math.round(leftTrigger.getMin() * 100 / 255) }}</span>
     </div>
     <div class="control-row">
       <span class="label">Max:</span>
       <input type="range" :value="leftTrigger.getMax()" @change="(e: any) => leftTrigger.setMax(e.target.value)" min="0" max="255">
-      <span class="value-label">{{ leftTrigger.getMax() }}</span>
+      <span class="value-label">{{ Math.round(leftTrigger.getMax() * 100 / 255) }}</span>
     </div>
   </section>
   <section>
@@ -31,12 +31,12 @@ defineProps({
     <div class="control-row">
       <span class="label">Min:</span>
       <input type="range" :value="rightTrigger.getMin()" @change="(e: any) => rightTrigger.setMin(e.target.value)" min="0" max="255">
-      <span class="value-label">{{ rightTrigger.getMin() }}</span>
+      <span class="value-label">{{ Math.round(rightTrigger.getMin() * 100 / 255) }}</span>
     </div>
     <div class="control-row">
       <span class="label">Max:</span>
       <input type="range" :value="rightTrigger.getMax()" @change="(e: any) => rightTrigger.setMax(e.target.value)" min="0" max="255">
-      <span class="value-label">{{ rightTrigger.getMax() }}</span>
+      <span class="value-label">{{ Math.round(rightTrigger.getMax() * 100 / 255) }}</span>
     </div>
   </section>
 </template>

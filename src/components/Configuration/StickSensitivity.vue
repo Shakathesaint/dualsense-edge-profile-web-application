@@ -151,7 +151,7 @@ onUnmounted(() => {
                :disabled="leftJoystick.getProfileId() === JoystickProfileId.DEFAULT"
                ref="leftJoystickRange"
         >
-        <span class="value-label">{{ getCurrentCurve(leftJoystick) }}</span>
+        <span class="value-label">{{ (getCurrentCurve(leftJoystick) - 5) > 0 ? '+' : '' }}{{ getCurrentCurve(leftJoystick) - 5 }}</span>
       </div>
     </div>
   </section>
@@ -198,7 +198,7 @@ onUnmounted(() => {
                :disabled="rightJoystick.getProfileId() === JoystickProfileId.DEFAULT"
                ref="rightJoystickRange"
         >
-        <span class="value-label">{{ getCurrentCurve(rightJoystick) }}</span>
+        <span class="value-label">{{ (getCurrentCurve(rightJoystick) - 5) > 0 ? '+' : '' }}{{ getCurrentCurve(rightJoystick) - 5 }}</span>
       </div>
     </div>
   </section>

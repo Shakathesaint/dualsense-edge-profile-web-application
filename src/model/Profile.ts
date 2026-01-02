@@ -1,7 +1,7 @@
 import Joystick from "./Joystick";
 import Trigger from "./Trigger";
 import StickDeadzone from "./StickDeadzone";
-import {ProfileButtonSelector} from "../enum/ProfileButtonSelector";
+import { ProfileButtonSelector } from "../enum/ProfileButtonSelector";
 import ButtonMapping from "./ButtonMapping";
 
 export default class Profile {
@@ -22,6 +22,9 @@ export default class Profile {
 
     private profileButtonSelector: ProfileButtonSelector;
 
+    // Bytes 34-37 from Buffer 2 (Magic Number / Timestamp?)
+    private unknownBytes: number[];
+
     constructor(
         id: string = "",
         label: string = "Label",
@@ -32,7 +35,8 @@ export default class Profile {
         leftStickDeadzone: StickDeadzone,
         rightStickDeadzone: StickDeadzone,
         buttonMapping: ButtonMapping,
-        profileButtonSelector: ProfileButtonSelector = ProfileButtonSelector.UNASSIGNED
+        profileButtonSelector: ProfileButtonSelector = ProfileButtonSelector.UNASSIGNED,
+        unknownBytes: number[] = [0, 0, 0, 0]
     ) {
         this.id = id;
         this.label = label;
@@ -44,6 +48,7 @@ export default class Profile {
         this.rightStickDeadzone = rightStickDeadzone;
         this.buttonMapping = buttonMapping;
         this.profileButtonSelector = profileButtonSelector;
+        this.unknownBytes = unknownBytes;
     }
 
     getId(): string {
@@ -125,5 +130,13 @@ export default class Profile {
 
     setProfileButtonSelector(value: ProfileButtonSelector) {
         this.profileButtonSelector = value;
+    }
+
+    getUnknownBytes(): number[] {
+        return this.unknownBytes;
+    }
+
+    setUnknownBytes(value: number[]) {
+        this.unknownBytes = value;
     }
 }

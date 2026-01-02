@@ -166,11 +166,15 @@ export function bytesArrayToProfile(bytesArray: Array<Array<number>>): Profile {
         new StickDeadzone(bytesArray[1][54]),
         new ButtonMapping(bytesArray[2].slice(10, 26)),
         // @ts-ignore
-        assignmentDictionary[bytesArray[0][0]]
+        assignmentDictionary[bytesArray[0][0]],
+        // Capture unknown bytes 34-37 from Buffer 2
+        Array.from(bytesArray[2].slice(34, 38))
     );
 
     profile.getLeftJoyStick().setCurveValues(leftJoystickCurrentCurveValues);
     profile.getRightJoyStick().setCurveValues(rightJoystickCurrentCurveValues);
+
+
 
     return profile;
 }
@@ -210,12 +214,20 @@ export function profileToBytes(profile: Profile): Array<Uint8Array> {
     buffers[2][30] = profile.getLeftJoyStick().getProfileId();
     buffers[2][32] = profile.getRightJoyStick().getProfileId();
 
+    // Restore unknown bytes 34-37 to Buffer 2
+    const unknownBytes = profile.getUnknownBytes();
+    if (unknownBytes && unknownBytes.length === 4) {
+        buffers[2].set(unknownBytes, 34);
+    }
+
     buffers[1][44] = profile.getLeftJoyStick().getModifier();
     buffers[1][53] = profile.getRightJoyStick().getModifier();
 
     // Deep copy using JSON
     let joyConL = JSON.parse(JSON.stringify(profile.getLeftJoyStick().getCurveValues()));
     let joyConR = JSON.parse(JSON.stringify(profile.getRightJoyStick().getCurveValues()));
+
+
 
     for (let i = 47; i < 53; i++) {
         buffers[1][i] = joyConL.shift();
@@ -269,9 +281,8 @@ export function profileToBytes(profile: Profile): Array<Uint8Array> {
     // Ignore paddle input?
     // buffers[2][28] = 0xC0;
 
-    // DateTime area?
-    buffers[2].set([0x1c, 0x55, 0xbb, 0x05, 0x87, 0x01], 34);
-
+    // NOTE: Bytes 34-37 (unknownBytes) are set earlier from profile.getUnknownBytes()
+    // Combined-profile CRC at position 56 (calculated from all 3 buffers' data)
     buffers[2].set(arrayCRC32Le(buffers), 56);
 
     return buffers;

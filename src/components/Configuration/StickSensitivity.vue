@@ -26,17 +26,17 @@ const edgeHIDController: Ref<HIDDevice> = inject('HIDController')!;
 const getCurrentCurve = (joystick: Joystick): number => {
   let indexCurve: number;
 
-  for (indexCurve = 0; indexCurve < 10; indexCurve++) {
+  for (indexCurve = 0; indexCurve <= 10; indexCurve++) {
     let arrAdjustments = PS5_JOYSTICK_CURVE[joystick.getProfileId()].getAdjustments().map(curve => curve.getByIndex(indexCurve));
     if (arrAdjustments.toString() === joystick.getCurveValues().toString()) break;
   }
 
-  return indexCurve;
+  return Math.min(indexCurve, 10); // Clamp to valid range
 }
 
 const changeJoyStickIndex = (joystick: Joystick, event: Event) => {
-  //@ts-ignore
-  joystick.setCurveValues(PS5_JOYSTICK_CURVE[joystick.getProfileId()].getAdjustments().map(curve => curve.getByIndex(event.target.value)));
+  const sliderValue = Number((event.target as HTMLInputElement).value);
+  joystick.setCurveValues(PS5_JOYSTICK_CURVE[joystick.getProfileId()].getAdjustments().map(curve => curve.getByIndex(sliderValue)));
 }
 
 const drawCurve = (ctx: CanvasRenderingContext2D, joystick: Joystick, testProgress: number) => {

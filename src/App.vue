@@ -139,6 +139,7 @@ const setSelectedProfile = (setSelectedProfile: Profile, isSavedProfile: boolean
   selectedProfile.value = setSelectedProfile;
 }
 
+
 const saveProfile = async (newProfile: Profile) => {
   if (!edgeHIDController.value) return;
 
@@ -146,7 +147,8 @@ const saveProfile = async (newProfile: Profile) => {
     const bytesArray = profileToBytes(newProfile);
 
     // Send all feature reports sequentially
-    for (const bytes of bytesArray) {
+    for (let bufIdx = 0; bufIdx < bytesArray.length; bufIdx++) {
+      const bytes = bytesArray[bufIdx];
       const ident = bytes[0];
       bytes.set(arrayCRC32LeBLE(new Uint8Array([CRC32_REPORT_PREFIX, ...bytes])), bytes.length - 4);
       await edgeHIDController.value.sendFeatureReport(ident, bytes.slice(1, bytes.length));

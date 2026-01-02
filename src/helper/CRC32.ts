@@ -20,7 +20,9 @@ export const arrayCRC32Le = (byteArray: Array<Uint8Array>) => {
 
 export const arrayCRC32LeBLE = (uint8Array: Uint8Array) => {
     let copy = uint8Array.slice(0);
-
+    const crc = CRC32.buf(copy) >>> 0;
+    // Pad to 8 hex characters to ensure we always get 4 bytes
+    const hexString = crc.toString(16).padStart(8, '0');
     // @ts-ignore
-    return (CRC32.buf(copy) >>> 0).toString(16).match(/.{1,2}/g).reverse().map(hex => parseInt(hex, 16));
+    return hexString.match(/.{1,2}/g).reverse().map(hex => parseInt(hex, 16));
 }

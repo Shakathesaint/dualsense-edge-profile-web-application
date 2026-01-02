@@ -1,0 +1,26 @@
+=== ANALYSIS OF 'Test curve' PROFILE ===
+
+--- RIGHT STICK ANALYSIS ---
+Modifier from buffer1[53]: 4 (0x04)
+ProfileId from buffer2[32]: 2 (PRECISE)
+Curve values: [85, 40, 149, 83, 206, 140]
+
+Trying to match with PRECISE profile:
+  Ô£à MATCH at slider index 5! (represents slider position 0)
+
+--- LEFT STICK ANALYSIS ---
+Modifier from buffer1[44]: 3 (0x03)
+ProfileId from buffer2[30]: 0 (DEFAULT)
+Curve values: [163, 147, 212, 205, 233, 229]
+
+DEFAULT profile values: [128, 128, 196, 196, 225, 225]
+Actual values: [163, 147, 212, 205, 233, 229]
+Match: NO
+
+Searching ALL profiles for a match:
+
+=== KEY FINDINGS ===
+1. buffer1[60-61] = [0, 0] - Empty!
+2. buffer2[2-3] = [206, 140] - Contains the actual curve data
+3. Current code reads from buffer2[2-3] which appears CORRECT
+4. The discrepancy might be in HOW the ProfileId/modifier bytes are used

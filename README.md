@@ -6,9 +6,18 @@ relying on a console.
 
 ![img.png](src/assets/readme-screenshot.png)
 
-## ✨ Fork Features
+## 🤔 Why This Fork?
 
-This fork introduces the following enhancements over the original project:
+The excellent work by [steffalon](https://github.com/steffalon) has become *partially obsolete* over time, thanks to Sony releasing an official app — **PlayStation Accessories** — that allows users to configure and customize the DualSense Edge controller.
+
+However, the PlayStation Accessories app is **missing a fundamental feature** that *is* available when using the controller directly with a PS5 console: the ability to **💾 save profiles locally** (for backup purposes, or when you want to customize more than the three profiles available on the controller and quickly swap them as needed).
+
+This is what motivated me to dive into steffalon's original code and **heavily modify it** 🛠️ — creating an app that allows even those *without a PS5 console* (or, like myself, who simply want to manage controller features with more **speed and convenience** ⚡) to:
+
+- 📦 **Backup** their profiles securely
+- 🔄 **Swap profiles quickly** between gaming sessions
+
+## ✨ Fork Features
 
 - 🎯 **Stick Deadzone Configuration** — Adjust the deadzone for left and right analog sticks (0-30%). The deadzone defines how far you must tilt the stick before input is recognized—useful for compensating stick drift or fine-tuning responsiveness.
 

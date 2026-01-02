@@ -22,6 +22,8 @@ This fork introduces the following enhancements over the original project:
 
 - 📱 **Progressive Web App (PWA)** — Install the application on your desktop or mobile device for a native-like experience. Works completely offline after the first load—no internet connection required to configure your controller.
 
+- 🔧 **Sensitivity Curve Save Fix** — Fixed a critical bug where certain slider combinations (e.g., both sticks at neutral position) would not persist after saving. The original implementation had hardcoded bytes overriding profile data and a CRC calculation issue. See [technical details](docs/sensitivity-curve-fix.md).
+
 ### 📲 Install as App
 
 This application can be installed as a standalone app on your device:

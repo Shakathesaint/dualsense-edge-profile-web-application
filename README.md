@@ -63,12 +63,6 @@ You can backup all your saved profiles at once and restore them later or share w
 
 ---
 
-### ⚙️ Functionality
-
-Currently, users can edit profiles on their DualSense Edge controller (Profile name and joystick sensitivity). Keep in
-mind that it will only work by using USB protocol if you want to make changes on your Edge controller. Bluetooth will
-work partially. Additional features are under development.
-
 ### 🌐 Why is this app build exclusively for web browsers?
 
 The main objective is to ensure cross-compatibility and easy accessibility of this tool. However, it currently requires

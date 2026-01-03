@@ -95,14 +95,20 @@ const leftStickInfo = computed(() => {
   const stick = props.profile.getLeftJoyStick();
   const deadzone = props.profile.getLeftStickDeadzone().getValue();
   const curveName = getCurveName(stick.getProfileId());
+  const isDefault = Number(stick.getProfileId()) === JoystickProfileId.DEFAULT;
   
   // Calculate modifier based on curve index (0-10 -> -5 to +5)
-  const curveIndex = getCurrentCurveIndex(stick);
-  const modifierVal = curveIndex - 5;
-  const modifierStr = modifierVal > 0 ? `(+${modifierVal})` : `(${modifierVal})`;
+  // Only show modifier if not default (default is not adjustable)
+  let curveDisplay = curveName;
+  if (!isDefault) {
+    const curveIndex = getCurrentCurveIndex(stick);
+    const modifierVal = curveIndex - 5;
+    const modifierStr = modifierVal > 0 ? `(+${modifierVal})` : `(${modifierVal})`;
+    curveDisplay = `${curveName} ${modifierStr}`;
+  }
   
   return {
-    curve: `${curveName} ${modifierStr}`,
+    curve: curveDisplay,
     deadzone: `${byteToPercent(deadzone)}%`
   };
 });
@@ -111,13 +117,19 @@ const rightStickInfo = computed(() => {
   const stick = props.profile.getRightJoyStick();
   const deadzone = props.profile.getRightStickDeadzone().getValue();
   const curveName = getCurveName(stick.getProfileId());
+  const isDefault = Number(stick.getProfileId()) === JoystickProfileId.DEFAULT;
   
-  const curveIndex = getCurrentCurveIndex(stick);
-  const modifierVal = curveIndex - 5;
-  const modifierStr = modifierVal > 0 ? `(+${modifierVal})` : `(${modifierVal})`;
+  // Only show modifier if not default (default is not adjustable)
+  let curveDisplay = curveName;
+  if (!isDefault) {
+    const curveIndex = getCurrentCurveIndex(stick);
+    const modifierVal = curveIndex - 5;
+    const modifierStr = modifierVal > 0 ? `(+${modifierVal})` : `(${modifierVal})`;
+    curveDisplay = `${curveName} ${modifierStr}`;
+  }
 
   return {
-    curve: `${curveName} ${modifierStr}`,
+    curve: curveDisplay,
     deadzone: `${byteToPercent(deadzone)}%`
   };
 });
@@ -320,21 +332,23 @@ const rightRemaps = computed(() => {
 
 
       <section id="select-popup" ref="select_popup" class="select-popup">
-        <button class="select-popup-close" id="select-popup-close">x</button>
-        <p>Button: <span class="button-identifier-original">{{ ButtonIndex[selectedButtonOriginalValue] }}</span></p>
-        <label for="assignment">Assigned:</label>
-        <select id="assignment" @change="(e: any) => updateButton(e)">
-          <option v-for="button in buttonLabels"
-                  :value="Button[button as any]"
-                  :selected="selectedButtonAssignedValue === Button[button as any]">
-            {{ button }}
-          </option>
-          <option v-if="Number(selectedButtonOriginalValue) === 14 || Number(selectedButtonOriginalValue) === 15"
-                  :value="Number(selectedButtonOriginalValue)"
-                  :selected="selectedButtonAssignedValue === selectedButtonOriginalValue">
-            {{ ButtonIndex[selectedButtonOriginalValue] }}
-          </option>
-        </select>
+        <template v-if="selectedButtonOriginalValue !== undefined">
+          <button class="select-popup-close" id="select-popup-close">x</button>
+          <p>Button: <span class="button-identifier-original">{{ ButtonIndex[selectedButtonOriginalValue] }}</span></p>
+          <label for="assignment">Assigned:</label>
+          <select id="assignment" @change="(e: any) => updateButton(e)">
+            <option v-for="button in buttonLabels"
+                    :value="Button[button as any]"
+                    :selected="selectedButtonAssignedValue === Button[button as any]">
+              {{ button }}
+            </option>
+            <option v-if="Number(selectedButtonOriginalValue) === 14 || Number(selectedButtonOriginalValue) === 15"
+                    :value="Number(selectedButtonOriginalValue)"
+                    :selected="selectedButtonAssignedValue === selectedButtonOriginalValue">
+              {{ ButtonIndex[selectedButtonOriginalValue] }}
+            </option>
+          </select>
+        </template>
       </section>
     </section>
 

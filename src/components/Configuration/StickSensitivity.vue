@@ -134,13 +134,12 @@ onUnmounted(() => {
           Dynamic
         </option>
       </select>
-      <div class="slider-container">
+      <div class="slider-container" v-if="Number(leftJoystick.getProfileId()) !== JoystickProfileId.DEFAULT">
         <input type="range"
                @input="e => changeJoyStickIndex(leftJoystick, e)"
                :value="getCurrentCurveIndex(leftJoystick)"
                min="0"
                max="10"
-               :disabled="leftJoystick.getProfileId() === JoystickProfileId.DEFAULT"
                ref="leftJoystickRange"
         >
         <span class="value-label">{{ (getCurrentCurveIndex(leftJoystick) - 5) > 0 ? '+' : '' }}{{ getCurrentCurveIndex(leftJoystick) - 5 }}</span>
@@ -181,13 +180,12 @@ onUnmounted(() => {
           Dynamic
         </option>
       </select>
-      <div class="slider-container">
+      <div class="slider-container" v-if="Number(rightJoystick.getProfileId()) !== JoystickProfileId.DEFAULT">
         <input type="range"
                @input="(e: any) => changeJoyStickIndex(rightJoystick, e)"
                :value="getCurrentCurveIndex(rightJoystick)"
                min="0"
                max="10"
-               :disabled="rightJoystick.getProfileId() === JoystickProfileId.DEFAULT"
                ref="rightJoystickRange"
         >
         <span class="value-label">{{ (getCurrentCurveIndex(rightJoystick) - 5) > 0 ? '+' : '' }}{{ getCurrentCurveIndex(rightJoystick) - 5 }}</span>

@@ -494,6 +494,10 @@ const rightRemaps = computed(() => {
     top: 220px;
     left: 0;
 }
+.middle-left .info-row {
+    justify-content: flex-start;
+    gap: 8px;
+}
 
 .middle-right {
     top: 220px;
@@ -504,13 +508,8 @@ const rightRemaps = computed(() => {
     flex-direction: row-reverse;
 }
 .middle-right .info-row {
-    flex-direction: row-reverse;
-}
-.middle-right .arrow {
-  margin: 0 4px;
-}
-.middle-left .arrow {
-  margin: 0 4px;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 .arrow {

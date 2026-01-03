@@ -253,28 +253,9 @@ export function profileToBytes(profile: Profile): Array<Uint8Array> {
     buffers[1][54] = rightDeadzone;
 
     // Apply deadzone interpolation to curve values
-    // Formula: NewValue = BaseValue + Round(Deadzone * (255 - BaseValue) / 255)
-    // Left stick curve values are at bytes 47-52, right stick at 56-59 + buffer2[2-3]
-    if (leftDeadzone > 0) {
-        for (let i = 47; i < 53; i++) {
-            const baseValue = buffers[1][i];
-            const increment = Math.round(leftDeadzone * (255 - baseValue) / 255);
-            buffers[1][i] = Math.min(255, baseValue + increment);
-        }
-    }
-    if (rightDeadzone > 0) {
-        for (let i = 56; i < 60; i++) {
-            const baseValue = buffers[1][i];
-            const increment = Math.round(rightDeadzone * (255 - baseValue) / 255);
-            buffers[1][i] = Math.min(255, baseValue + increment);
-        }
-        // Also update the last 2 bytes in buffer 2
-        for (let i = 2; i < 4; i++) {
-            const baseValue = buffers[2][i];
-            const increment = Math.round(rightDeadzone * (255 - baseValue) / 255);
-            buffers[2][i] = Math.min(255, baseValue + increment);
-        }
-    }
+    // REMOVED: We want to keep the raw profile data pure. 
+    // Applying interpolation here causes mismatches when comparing with preset curves.
+    // The deadzone calculation should be done at the visualization level (if needed), not on the model data.
 
     buffers[2].set(profile.getButtonMapping().getButtons(), 10);
 

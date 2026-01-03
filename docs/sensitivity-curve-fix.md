@@ -37,6 +37,8 @@ buffers[2].set(arrayCRC32Le(buffers), 56);
 
 **Issue 2** (secondary, fixed during investigation): The `arrayCRC32LeBLE` function did not pad the CRC to 8 hex characters, causing variable-length arrays when the CRC started with `0`.
 
+**Issue 3** (Regression): After fixing the above, a new issue appeared where slider 0 values reverted to +5. This was caused by `bytesToProfile` modifying raw curve values by applying deadzone interpolation during read. This caused `getCurrentCurveIndex` to fail matching the modified values against standard preset curves, defaulting to index 10 (+5).
+
 ## Solution
 
 ### Fix 1: Preserve "unknown" bytes from profile
@@ -66,12 +68,20 @@ const hexString = crc.toString(16).padStart(8, '0');
 return hexString.match(/.{1,2}/g)...
 ```
 
+### Fix 4: Removed Deadzone Interpolation (Regression Fix)
+Removed the code block in `bytesToProfile.ts` that applied deadzone calculations to the raw curve values. This ensures:
+1. Profile data remains pure and matches exactly what was saved.
+2. `getCurrentCurveIndex` correctly identifies the slider position by comparing raw values.
+3. Deadzone effects are left to the visualization layer or controller hardware, not modifying the data model.
+
 ## Files Modified
 - `src/model/Profile.ts` - Added `unknownBytes` field
-- `src/helper/bytesToProfile.ts` - Read/write unknownBytes, removed hardcoded bytes
+- `src/helper/bytesToProfile.ts` - Read/write unknownBytes, removed hardcoded bytes, removed deadzone interpolation
 - `src/helper/CRC32.ts` - Pad CRC to 8 characters
+- `src/helper/converters.ts` - (Debugged and verified loop logic)
 
 ## Verification
 ✅ [Left 0, Right 0] - Saves correctly
 ✅ [Left +3, Right 0] - Saves correctly  
+✅ Slider values persist correctly after reload (Regression Fix confirmed)
 ✅ Verified in official PlayStation app

@@ -69,13 +69,10 @@ const scanSelected = (e: Event) => {
 
   select_popup.value.style.display = "block";
 
-  // Fixed centered position for popup
-  // Center horizontally: container is ~900px max, controller is 512px centered
-  // Popup is ~140px wide, so left = (containerWidth - popupWidth) / 2
-  select_popup.value.style.left = 'calc(50% - 70px)';
-  
-  // All buttons now on front view - center vertically in controller area
-  select_popup.value.style.top = '200px';
+  // Center popup over the controller image
+  select_popup.value.style.left = '50%';
+  select_popup.value.style.top = '360px';
+  select_popup.value.style.transform = 'translateX(-50%)';
 }
 
 const getCurveName = (id: number) => {
@@ -533,73 +530,90 @@ const rightRemaps = computed(() => {
 
 .select-popup {
   position: absolute;
-  min-width: 160px;
-  padding: 18px;
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-secondary);
+  min-width: 240px;
+  padding: 20px 24px;
+  background: rgba(22, 26, 33, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-lg);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
   display: none;
   color: var(--text-primary);
-  animation: popupFadeIn var(--transition-base) ease-out;
+  animation: popupFadeIn var(--transition-smooth) ease-out;
 }
 
 @keyframes popupFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-10px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 .select-popup p {
-  margin: 0 0 12px 0;
+  margin: 0 0 16px 0;
   color: var(--text-secondary);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .select-popup label {
   display: block;
-  margin-bottom: 6px;
-  color: var(--text-secondary);
-  font-size: 0.8rem;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .select-popup select {
   width: 100%;
   background-color: var(--bg-input);
-  border: 1px solid var(--border-primary);
+  border: 1px solid var(--border-secondary);
   border-radius: var(--border-radius-sm);
   color: var(--text-primary);
-  padding: 8px 10px;
+  padding: 10px 12px;
   font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.select-popup select:hover {
+  border-color: var(--text-muted);
 }
 
 .select-popup select:focus {
   outline: none;
-  border-color: var(--border-focus);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px var(--accent-blue-subtle);
 }
 
 .select-popup-close {
-  all: unset;
   position: absolute;
-  right: 8px;
-  top: 8px;
-  width: 24px;
-  height: 24px;
-  text-align: center;
-  font-size: 1.2rem;
-  color: var(--text-secondary);
+  right: 12px;
+  top: 12px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: var(--text-muted);
   cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.15s ease;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--border-secondary);
+  background: transparent;
+  transition: all var(--transition-base);
 }
 
 .select-popup-close:hover {
-  background-color: var(--bg-card-hover);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--text-muted);
   color: var(--text-primary);
 }
 

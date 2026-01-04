@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Profile from "./Profile.vue";
+import QuickSwitchButton from "./QuickSwitchButton.vue";
 
 import ProfileModel from "../../model/Profile";
 import LocalIndexDB from "../../model/LocalIndexDB";
@@ -13,7 +14,7 @@ import {
   ImportResult
 } from "../../helper/profileSerializer";
 import {createShareableLink, copyToClipboard} from "../../helper/cloudShare";
-import {inject, ref} from "vue";
+import {inject, ref, nextTick} from "vue";
 import type {Ref} from "vue";
 import Joystick from "../../model/Joystick";
 import Trigger from "../../model/Trigger";
@@ -32,7 +33,7 @@ defineProps({
 
 const savedProfiles: Ref<Array<ProfileModel>> = ref([]);
 
-const emit = defineEmits(['selected-profile', 'delete-profile']);
+const emit = defineEmits(['selected-profile', 'delete-profile', 'save-to-controller']);
 
 const db: LocalIndexDB = inject('db') as LocalIndexDB;
 const hidController = inject('HIDController') as Ref<HIDDevice>;
@@ -318,6 +319,97 @@ const copyShareUrl = async () => {
   }
 };
 
+// Quick Switch State
+const swappingSlot = ref<ProfileButtonSelector | null>(null);
+const swapAnimationProfile = ref<string | null>(null);
+
+// Clone a local profile for controller with new slot assignment
+const cloneProfileForController = (localProfile: ProfileModel, targetSlot: ProfileButtonSelector): ProfileModel => {
+  const leftProfileId = localProfile.getLeftJoyStick().getProfileId();
+  const rightProfileId = localProfile.getRightJoyStick().getProfileId();
+
+  const joystickLeft = new Joystick(
+    leftProfileId,
+    PS5_JOYSTICK_CURVE[leftProfileId].getAdjustments(),
+    localProfile.getLeftJoyStick().getModifier()
+  );
+  joystickLeft.setCurveValues([...localProfile.getLeftJoyStick().getCurveValues()]);
+
+  const joystickRight = new Joystick(
+    rightProfileId,
+    PS5_JOYSTICK_CURVE[rightProfileId].getAdjustments(),
+    localProfile.getRightJoyStick().getModifier()
+  );
+  joystickRight.setCurveValues([...localProfile.getRightJoyStick().getCurveValues()]);
+
+  return new ProfileModel(
+    generateId(),
+    localProfile.getLabel(),
+    joystickLeft,
+    joystickRight,
+    new Trigger(localProfile.getLeftTrigger().getMin(), localProfile.getLeftTrigger().getMax()),
+    new Trigger(localProfile.getRightTrigger().getMin(), localProfile.getRightTrigger().getMax()),
+    new StickDeadzone(localProfile.getLeftStickDeadzone().getValue()),
+    new StickDeadzone(localProfile.getRightStickDeadzone().getValue()),
+    new ButtonMapping([...localProfile.getButtonMapping().getButtons()]),
+    targetSlot
+  );
+};
+
+// Perform quick switch: swap local profile with controller slot
+const performQuickSwitch = async (localProfile: ProfileModel, targetSlot: ProfileButtonSelector, controllerProfiles: ProfileModel[]) => {
+  if (!hidController.value || swappingSlot.value !== null) return;
+
+  // Set animation state
+  swappingSlot.value = targetSlot;
+  swapAnimationProfile.value = localProfile.getId();
+
+  // Wait for Vue to update the DOM before starting the operation
+  await nextTick();
+
+  try {
+    // 1. Find controller profile in target slot
+    const controllerProfile = controllerProfiles.find(
+      (p: ProfileModel) => p.getProfileButtonSelector() === targetSlot
+    );
+
+    // 2. Save controller profile locally only if not "Unassigned" AND not already saved
+    if (controllerProfile && controllerProfile.getLabel() !== "Unassigned") {
+      // Check if profile with same label already exists locally
+      const alreadyExists = savedProfiles.value.some(
+        (p: ProfileModel) => p.getLabel() === controllerProfile.getLabel()
+      );
+      if (!alreadyExists) {
+        saveProfileLocally(controllerProfile);
+      }
+    }
+
+    // 3. Clone local profile with target slot's ProfileButtonSelector
+    const clonedProfile = cloneProfileForController(localProfile, targetSlot);
+
+    // 4. Emit 'save-to-controller' event
+    emit('save-to-controller', clonedProfile);
+
+    // 5. Wait for save operation and show animation (minimum 1 second for visibility)
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    await getProfiles();
+
+    // 6. Show success toast
+    const slotNames: Record<number, string> = {
+      [ProfileButtonSelector.FN_SQUARE]: 'Square (Slot 2)',
+      [ProfileButtonSelector.FN_CROSS]: 'Cross (Slot 3)',
+      [ProfileButtonSelector.FN_CIRCLE]: 'Circle (Slot 4)',
+    };
+    success(`Swapped "${localProfile.getLabel()}" with ${slotNames[targetSlot]}`);
+  } catch (err) {
+    const hidError = parseHIDError(err);
+    error(`Swap failed: ${hidError.message}`);
+  } finally {
+    swappingSlot.value = null;
+    swapAnimationProfile.value = null;
+  }
+};
+
 </script>
 
 <template>
@@ -340,7 +432,9 @@ const copyShareUrl = async () => {
       <section class="profiles" v-if="profiles">
         <Profile @selected-profile="(selectedProfile) => $emit('selected-profile', selectedProfile)"
                  v-for="(profile, i) in profiles"
-                 :profile="profile">
+                 :key="(profile as ProfileModel).getId()"
+                 :profile="profile"
+                 :class="{ 'is-being-swapped': swappingSlot === (profile as ProfileModel).getProfileButtonSelector() }">
           <div class="profile-right">
             <span class="button-combination">
               <span class="fn-button">FN</span>
@@ -376,8 +470,29 @@ const copyShareUrl = async () => {
       <section class="profiles saved" v-if="savedProfiles.length">
         <Profile @selected-profile="(selectedProfile) => $emit('selected-profile', selectedProfile, true)"
                  v-for="profile in savedProfiles"
+                 :key="profile.getId()"
                  :profile="profile">
           <div class="profile-actions-saved">
+            <div class="quick-switch-group">
+              <QuickSwitchButton 
+                button-type="square" 
+                :disabled="!hidController" 
+                :is-swapping="swappingSlot === ProfileButtonSelector.FN_SQUARE && swapAnimationProfile === profile.getId()"
+                @click="performQuickSwitch(profile, ProfileButtonSelector.FN_SQUARE, profiles as ProfileModel[])" 
+              />
+              <QuickSwitchButton 
+                button-type="cross" 
+                :disabled="!hidController" 
+                :is-swapping="swappingSlot === ProfileButtonSelector.FN_CROSS && swapAnimationProfile === profile.getId()"
+                @click="performQuickSwitch(profile, ProfileButtonSelector.FN_CROSS, profiles as ProfileModel[])" 
+              />
+              <QuickSwitchButton 
+                button-type="circle" 
+                :disabled="!hidController" 
+                :is-swapping="swappingSlot === ProfileButtonSelector.FN_CIRCLE && swapAnimationProfile === profile.getId()"
+                @click="performQuickSwitch(profile, ProfileButtonSelector.FN_CIRCLE, profiles as ProfileModel[])" 
+              />
+            </div>
             <button class="action-button-text" @click="$event.stopPropagation(); exportProfile(profile)">Export</button>
             <button class="profile-delete-button" @click="$event.stopPropagation(); deleteProfileConfirm(profile)">Delete</button>
           </div>
@@ -619,6 +734,24 @@ const copyShareUrl = async () => {
   padding-top: 8px;
 }
 
+.is-being-swapped {
+  animation: profilePulse 0.5s ease-in-out infinite;
+  background-color: rgba(0, 112, 209, 0.15) !important;
+  border-left-color: var(--accent-blue) !important;
+  box-shadow: inset 0 0 12px rgba(0, 112, 209, 0.3);
+}
+
+@keyframes profilePulse {
+  0%, 100% { 
+    background-color: rgba(0, 112, 209, 0.1);
+    box-shadow: inset 0 0 8px rgba(0, 112, 209, 0.2);
+  }
+  50% { 
+    background-color: rgba(0, 112, 209, 0.25);
+    box-shadow: inset 0 0 16px rgba(0, 112, 209, 0.4);
+  }
+}
+
 /* Profile Right Section */
 .profile-right {
   display: flex;
@@ -669,6 +802,16 @@ const copyShareUrl = async () => {
   gap: 6px;
   align-items: center;
   flex-wrap: nowrap;
+}
+
+.quick-switch-group {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 3px 5px;
+  border-radius: 16px;
+  margin-right: 4px;
 }
 
 .action-button-text {

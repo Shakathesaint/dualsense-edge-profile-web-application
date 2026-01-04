@@ -174,6 +174,7 @@ const saveProfile = async (newProfile: Profile) => {
   </section>
   <section v-else class="container">
     <ProfileOverview @selected-profile="setSelectedProfile"
+                     @save-to-controller="saveProfile"
                      :profiles="profiles"
                      class="profile-overview"/>
     <Configurator @save="saveProfile"

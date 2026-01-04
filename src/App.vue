@@ -167,9 +167,17 @@ const saveProfile = async (newProfile: Profile) => {
   <ToastContainer />
   <section v-if="!edgeHIDController" class="connect-controller-container">
     <section class="connect-controller-content">
-      <h3 class="connect-controller-header">DualSense Edge controller not detected!</h3>
-      <p class="connect-controller-text">Please (re)connect your controller.</p>
-      <button class="connect-controller-button" @click="getDevice">Connect controller</button>
+      <div class="connect-controller-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 11H8M18 11H16M17 8V14M7 8V10M10 15C10 15 11 16 12 16C13 16 14 15 14 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 10C2 7.17157 2 5.75736 2.87868 4.87868C3.75736 4 5.17157 4 8 4H16C18.8284 4 20.2426 4 21.1213 4.87868C22 5.75736 22 7.17157 22 10V14C22 16.8284 22 18.2426 21.1213 19.1213C20.2426 20 18.8284 20 16 20H8C5.17157 20 3.75736 20 2.87868 19.1213C2 18.2426 2 16.8284 2 14V10Z" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <h2 class="connect-controller-header">Controller Not Detected</h2>
+      <p class="connect-controller-text">Connect your DualSense Edge controller via USB to get started.</p>
+      <button class="connect-controller-button" @click="getDevice">
+        <span>Connect Controller</span>
+      </button>
     </section>
   </section>
   <section v-else class="container">
@@ -213,38 +221,70 @@ const saveProfile = async (newProfile: Profile) => {
 .connect-controller-content {
   background-color: var(--bg-card);
   border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius-lg);
-  padding: 40px 48px;
+  border-radius: var(--border-radius-xl);
+  padding: 48px 56px;
   text-align: center;
-  max-width: 400px;
+  max-width: 440px;
   box-shadow: var(--shadow-lg);
+}
+
+.connect-controller-icon {
+  margin-bottom: 24px;
+}
+
+.connect-controller-icon svg {
+  width: 72px;
+  height: 72px;
+  color: var(--accent-blue);
+  animation: iconPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% { 
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1;
+    transform: scale(1.05);
+  }
 }
 
 .connect-controller-header {
   color: var(--text-primary);
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 12px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.02em;
 }
 
 .connect-controller-text {
   color: var(--text-secondary);
-  margin-bottom: 24px;
+  margin: 0 0 28px 0;
+  line-height: 1.5;
+  font-size: 0.95rem;
 }
 
 .connect-controller-button {
   background-color: var(--accent-blue);
-  color: var(--text-primary);
+  color: white;
   border: none;
   border-radius: var(--border-radius-md);
-  padding: 12px 32px;
+  padding: 14px 36px;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all var(--transition-smooth);
+  box-shadow: 0 0 0 0 var(--accent-blue-glow);
 }
 
 .connect-controller-button:hover {
   background-color: var(--accent-blue-hover);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px);
+}
+
+.connect-controller-button:active {
+  transform: translateY(0);
 }
 </style>

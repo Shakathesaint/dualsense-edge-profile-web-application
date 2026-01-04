@@ -139,14 +139,14 @@ watch(props, data => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-primary);
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-secondary);
 }
 
 .profile-name {
   color: var(--text-primary);
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   margin: 0;
   display: flex;
@@ -155,105 +155,138 @@ watch(props, data => {
 }
 
 .profile-name input {
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius-sm);
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-secondary);
+  border-radius: 0;
   color: var(--text-primary);
-  padding: 8px 12px;
-  font-size: 1rem;
+  padding: 6px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: border-color var(--transition-base);
 }
 
 .profile-name input:focus {
   outline: none;
-  border-color: var(--border-focus);
+  border-bottom-color: var(--accent-blue);
+}
+
+.profile-name input:hover:not(:focus) {
+  border-bottom-color: var(--text-muted);
 }
 
 /* Apply Existing Profile Dropdown */
 .apply-existing-profile {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .apply-existing-profile label {
   display: block;
   margin-bottom: 0;
-  color: var(--text-secondary);
-  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
   white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .apply-existing-profile select {
-  min-width: 200px;
+  min-width: 180px;
   background-color: var(--bg-input);
-  border: 1px solid var(--border-primary);
+  border: 1px solid var(--border-secondary);
   border-radius: var(--border-radius-sm);
   color: var(--text-primary);
   padding: 8px 12px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  transition: border-color var(--transition-base);
 }
 
 .apply-existing-profile select:focus {
   outline: none;
-  border-color: var(--border-focus);
+  border-color: var(--accent-blue);
 }
 
-/* Save Button */
+/* Save Button with Glow */
 .save-btn {
   background-color: var(--accent-blue);
-  color: var(--text-primary);
+  color: white;
   border: none;
   border-radius: var(--border-radius-md);
-  padding: 10px 24px;
+  padding: 10px 28px;
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all var(--transition-smooth);
+  box-shadow: 0 0 0 0 var(--accent-blue-glow);
 }
 
 .save-btn:hover {
   background-color: var(--accent-blue-hover);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px);
 }
 
-/* Tabs Section */
+.save-btn:active {
+  transform: translateY(0);
+}
+
+/* Tabs Section - Underline Style */
 .tabs {
   display: flex;
-  gap: 0;
+  gap: 4px;
   margin-bottom: 24px;
-  background-color: var(--bg-card);
-  border-radius: var(--border-radius-md);
-  padding: 4px;
+  border-bottom: 1px solid var(--border-secondary);
+  background: transparent;
+  padding: 0;
 }
 
 .tab {
-  flex: 1;
-  padding: 12px 16px;
+  padding: 12px 20px;
   cursor: pointer;
   color: var(--text-secondary);
   text-align: center;
-  font-size: 0.9rem;
-  font-weight: 500;
-  border-radius: var(--border-radius-sm);
-  transition: all 0.2s ease;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all var(--transition-base);
   border: none;
+  background: transparent;
+  position: relative;
+  flex: none;
+}
+
+.tab::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--accent-blue);
+  transform: scaleX(0);
+  transition: transform var(--transition-smooth);
 }
 
 .tab:hover {
   color: var(--text-primary);
-  background-color: var(--bg-card-hover);
 }
 
 .tab.active {
-  background-color: var(--accent-blue);
-  color: var(--text-primary);
-  font-weight: 600;
+  color: var(--accent-blue);
+}
+
+.tab.active::after {
+  transform: scaleX(1);
 }
 
 /* Configuration Container */
 .configuration-setting-container {
   background-color: var(--bg-card);
-  border: 1px solid var(--border-primary);
+  border: 1px solid var(--border-secondary);
   border-radius: var(--border-radius-lg);
-  padding: 24px;
+  padding: 28px;
 }
 </style>

@@ -419,8 +419,11 @@ const performQuickSwitch = async (localProfile: ProfileModel, targetSlot: Profil
       <div class="controller-image-container">
         <img src="../../assets/edge-front.png" alt="DualSense Edge" class="controller-image" />
       </div>
-      <h2 class="controller-name">DualSense Edge Wireless Controller</h2>
-      <p class="controller-status">Connected via USB</p>
+      <h2 class="controller-name">DualSense Edge</h2>
+      <div class="controller-status">
+        <span class="status-dot"></span>
+        <span>Connected via USB</span>
+      </div>
     </section>
 
     <!-- Profiles Container -->
@@ -652,32 +655,51 @@ const performQuickSwitch = async (localProfile: ProfileModel, targetSlot: Profil
 
 /* Controller Info Section */
 .controller-info {
-  padding: 24px 20px;
+  padding: 20px 16px;
   text-align: center;
   border-bottom: 1px solid var(--border-secondary);
 }
 
 .controller-image-container {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .controller-image {
-  max-width: 180px;
+  max-width: 160px;
   height: auto;
   filter: brightness(0.95) contrast(1.05);
 }
 
 .controller-name {
   color: var(--text-primary);
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   margin: 0 0 8px 0;
+  letter-spacing: -0.01em;
 }
 
 .controller-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--text-secondary);
-  font-size: 0.85rem;
-  margin: 0;
+  font-size: 0.8rem;
+  background-color: rgba(46, 164, 79, 0.1);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--accent-green);
+  border-radius: 50%;
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 /* Profiles Container */

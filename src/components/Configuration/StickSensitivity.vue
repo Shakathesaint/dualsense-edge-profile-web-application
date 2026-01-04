@@ -208,12 +208,14 @@ h3 {
 .note {
   display: block;
   margin-bottom: 16px;
-  padding: 12px 16px;
-  background-color: rgba(210, 153, 34, 0.1);
-  border: 1px solid rgba(210, 153, 34, 0.3);
+  padding: 12px 16px 12px 14px;
+  background-color: rgba(210, 153, 34, 0.08);
+  border: 1px solid rgba(210, 153, 34, 0.2);
+  border-left: 3px solid var(--accent-orange);
   border-radius: var(--border-radius-sm);
   color: var(--accent-orange);
   font-size: 0.85rem;
+  line-height: 1.5;
 }
 
 .canvasContainer {
@@ -222,9 +224,11 @@ h3 {
   height: 255px;
   resize: both;
   overflow: hidden;
-  border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--border-radius-lg);
   background-color: var(--bg-input);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 16px 16px;
   margin-bottom: 16px;
 }
 
@@ -275,9 +279,10 @@ input[type="range"] {
   height: 6px;
   -webkit-appearance: none;
   appearance: none;
-  background: var(--bg-card-hover);
+  background: linear-gradient(90deg, var(--bg-secondary) 0%, var(--bg-card-hover) 100%);
   border-radius: 3px;
   outline: none;
+  transition: background var(--transition-base);
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -288,11 +293,13 @@ input[type="range"]::-webkit-slider-thumb {
   background: var(--accent-blue);
   border-radius: 50%;
   cursor: pointer;
-  transition: transform 0.1s ease;
+  transition: all var(--transition-base);
+  box-shadow: 0 2px 6px rgba(0, 112, 209, 0.3);
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(0, 112, 209, 0.4);
 }
 
 input[type="range"]::-moz-range-thumb {

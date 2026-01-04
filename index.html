@@ -1,60 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8"/>
-    <link rel="icon" href="/icon.png"/>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/icon.png" />
     <meta name="description"
-          content="Enable profile creation, deletion, and modification functionalities on a DualSense Edge controller without a PlayStation 5 console."/>
-    <meta name="keywords" content="dualsense, edge, configurator"/>
-    <meta name="robots" content="index,nofollow"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        content="Enable profile creation, deletion, and modification functionalities on a DualSense Edge controller without a PlayStation 5 console." />
+    <meta name="keywords" content="dualsense, edge, configurator" />
+    <meta name="robots" content="index,nofollow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DualSense Edge Profile Web Application</title>
-    <meta name="theme-color" content="#0d1117">
+    <meta name="theme-color" content="#06080a">
+
+    <!-- Premium Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap"
+        rel="stylesheet">
+
     <style>
         :root {
-            /* Backgrounds */
-            --bg-primary: #0d1117;
-            --bg-secondary: #161b22;
-            --bg-card: #21262d;
-            --bg-card-hover: #30363d;
-            --bg-input: #0d1117;
+            /* Backgrounds - Deeper, richer blacks */
+            --bg-primary: #06080a;
+            --bg-secondary: #0c0e12;
+            --bg-tertiary: #12151a;
+            --bg-card: #161a21;
+            --bg-card-hover: #1c2128;
+            --bg-input: #0a0c0f;
+            --bg-elevated: #1a1e25;
 
-            /* Borders */
-            --border-primary: #30363d;
-            --border-secondary: #21262d;
-            --border-focus: #58a6ff;
+            /* Borders - Subtle, refined */
+            --border-primary: #252a33;
+            --border-secondary: #1c2028;
+            --border-subtle: #1a1e25;
+            --border-focus: #0070d1;
 
-            /* Text */
-            --text-primary: #f0f6fc;
-            --text-secondary: #8b949e;
-            --text-muted: #6e7681;
+            /* Text - High contrast hierarchy */
+            --text-primary: #f0f3f6;
+            --text-secondary: #8b929a;
+            --text-muted: #5c6370;
+            --text-accent: #ffffff;
 
-            /* Accents */
+            /* PlayStation Blue - Core accent */
             --accent-blue: #0070d1;
-            --accent-blue-hover: #1f8fff;
-            --accent-green: #3fb950;
-            --accent-red: #f85149;
+            --accent-blue-hover: #0080eb;
+            --accent-blue-glow: rgba(0, 112, 209, 0.25);
+            --accent-blue-subtle: rgba(0, 112, 209, 0.1);
+
+            /* Status Colors */
+            --accent-green: #2ea44f;
+            --accent-red: #da3633;
             --accent-orange: #d29922;
+            --accent-cyan: #39c5cf;
 
             /* Layout */
-            --sidebar-width: 340px;
+            --sidebar-width: 400px;
+            --header-height: 72px;
+            --border-radius-xs: 4px;
             --border-radius-sm: 6px;
-            --border-radius-md: 8px;
-            --border-radius-lg: 12px;
+            --border-radius-md: 10px;
+            --border-radius-lg: 14px;
+            --border-radius-xl: 20px;
 
-            /* Shadows */
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+            /* Shadows - Layered depth */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+            --shadow-glow: 0 0 20px var(--accent-blue-glow);
+
+            /* Transitions */
+            --transition-fast: 0.15s ease;
+            --transition-base: 0.2s ease;
+            --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background-color: var(--bg-primary);
             color: var(--text-primary);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            font-feature-settings: 'kern' 1, 'liga' 1;
+            letter-spacing: -0.01em;
+            line-height: 1.5;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-primary);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Selection */
+        ::selection {
+            background: var(--accent-blue);
+            color: white;
         }
 
         noscript {
@@ -69,14 +128,17 @@
             margin: auto;
             background-color: var(--bg-card);
             border: 1px solid var(--border-primary);
-            border-radius: var(--border-radius-md);
+            border-radius: var(--border-radius-lg);
             color: var(--text-secondary);
-            padding: 24px 32px;
+            padding: 32px 40px;
+            box-shadow: var(--shadow-lg);
         }
 
         .noscript-content a {
             color: var(--accent-blue);
-            font-weight: bold;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color var(--transition-fast);
         }
 
         .noscript-content a:hover {
@@ -85,29 +147,38 @@
 
         .noscript-header {
             color: var(--text-primary);
-            letter-spacing: 0.42pt;
+            font-weight: 600;
+            letter-spacing: -0.02em;
         }
 
         .noscript-paragraph {
-            letter-spacing: 0.16pt;
-            line-height: 1.5rem;
+            line-height: 1.6;
         }
 
         input {
             accent-color: var(--accent-blue);
         }
+
+        /* Focus visible for accessibility */
+        :focus-visible {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 2px;
+        }
     </style>
 </head>
+
 <body>
-<noscript>
-    <div class="noscript-content">
-        <h2 class="noscript-header">Greetings gamer!</h2>
-        <p class="noscript-paragraph">To configure a DualSense Edge controller and store your own local save data,
-            JavaScript must be enabled to communicate with your DualSense Edge device.</p>
-        <p class="noscript-paragraph">If you've just enabled JavaScript, please <a href="/">refresh</a> this page</p>
-    </div>
-</noscript>
-<div id="app"></div>
-<script type="module" src="/src/main.ts"></script>
+    <noscript>
+        <div class="noscript-content">
+            <h2 class="noscript-header">Greetings gamer!</h2>
+            <p class="noscript-paragraph">To configure a DualSense Edge controller and store your own local save data,
+                JavaScript must be enabled to communicate with your DualSense Edge device.</p>
+            <p class="noscript-paragraph">If you've just enabled JavaScript, please <a href="/">refresh</a> this page
+            </p>
+        </div>
+    </noscript>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
 </body>
+
 </html>

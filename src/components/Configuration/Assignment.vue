@@ -400,21 +400,21 @@ const rightRemaps = computed(() => {
 .info-card {
     position: absolute;
     width: 200px;
-    padding: 12px;
-    background: rgba(30, 30, 35, 0.85); /* Semi-transparent dark background */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    backdrop-filter: blur(8px); /* Blur effect */
+    padding: 14px;
+    background: rgba(22, 26, 33, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--border-radius-md);
+    backdrop-filter: blur(12px);
     z-index: 20;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
     color: white;
-    font-family: sans-serif;
-    transition: transform 0.2s ease;
+    transition: all var(--transition-base);
 }
 
 .info-card:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
 .card-header {
@@ -553,14 +553,26 @@ const rightRemaps = computed(() => {
 
 .select-popup {
   position: absolute;
-  min-width: 140px;
-  padding: 16px;
+  min-width: 160px;
+  padding: 18px;
   background-color: var(--bg-card);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
   display: none;
   color: var(--text-primary);
+  animation: popupFadeIn var(--transition-base) ease-out;
+}
+
+@keyframes popupFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .select-popup p {

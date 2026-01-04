@@ -79,9 +79,10 @@ input[type="range"] {
   height: 6px;
   -webkit-appearance: none;
   appearance: none;
-  background: var(--bg-card-hover);
+  background: linear-gradient(90deg, var(--bg-secondary) 0%, var(--bg-card-hover) 100%);
   border-radius: 3px;
   outline: none;
+  transition: background var(--transition-base);
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -92,11 +93,13 @@ input[type="range"]::-webkit-slider-thumb {
   background: var(--accent-blue);
   border-radius: 50%;
   cursor: pointer;
-  transition: transform 0.1s ease;
+  transition: all var(--transition-base);
+  box-shadow: 0 2px 6px rgba(0, 112, 209, 0.3);
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(0, 112, 209, 0.4);
 }
 
 input[type="range"]::-moz-range-thumb {

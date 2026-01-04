@@ -25,15 +25,30 @@ defineEmits([
 .item {
   display: flex;
   justify-content: space-between;
-  padding: 12px 20px;
+  padding: 12px 16px;
   cursor: pointer;
   align-items: center;
-  transition: background-color 0.15s ease;
+  transition: all var(--transition-base);
   border-left: 3px solid transparent;
+  position: relative;
+}
+
+.item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 112, 209, 0.08) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  pointer-events: none;
+}
+
+.item:hover::before {
+  opacity: 1;
 }
 
 .item:hover {
-  background-color: var(--bg-card);
+  border-left-color: var(--accent-blue-subtle);
 }
 
 p {
@@ -44,6 +59,6 @@ p {
 .label {
   color: var(--text-primary);
   font-weight: 500;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 </style>

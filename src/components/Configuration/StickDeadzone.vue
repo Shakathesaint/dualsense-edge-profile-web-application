@@ -72,12 +72,14 @@ h3 {
 .note {
   display: block;
   margin-bottom: 24px;
-  padding: 12px 16px;
-  background-color: rgba(139, 148, 158, 0.1);
-  border: 1px solid rgba(139, 148, 158, 0.3);
+  padding: 12px 16px 12px 14px;
+  background-color: rgba(139, 148, 158, 0.08);
+  border: 1px solid rgba(139, 148, 158, 0.2);
+  border-left: 3px solid var(--text-muted);
   border-radius: var(--border-radius-sm);
   color: var(--text-secondary);
   font-size: 0.85rem;
+  line-height: 1.5;
 }
 
 .deadzone-control {
@@ -99,9 +101,10 @@ input[type="range"] {
   height: 6px;
   -webkit-appearance: none;
   appearance: none;
-  background: var(--bg-card-hover);
+  background: linear-gradient(90deg, var(--bg-secondary) 0%, var(--bg-card-hover) 100%);
   border-radius: 3px;
   outline: none;
+  transition: background var(--transition-base);
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -112,11 +115,13 @@ input[type="range"]::-webkit-slider-thumb {
   background: var(--accent-blue);
   border-radius: 50%;
   cursor: pointer;
-  transition: transform 0.1s ease;
+  transition: all var(--transition-base);
+  box-shadow: 0 2px 6px rgba(0, 112, 209, 0.3);
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(0, 112, 209, 0.4);
 }
 
 input[type="range"]::-moz-range-thumb {

@@ -15,7 +15,7 @@ defineEmits([
 <template>
   <section class="item" @click="$emit('selected-profile', profile)">
     <p class="label">{{ profile.getLabel() }}</p>
-    <div>
+    <div class="actions">
       <slot/>
     </div>
   </section>
@@ -28,9 +28,10 @@ defineEmits([
   padding: 12px 16px;
   cursor: pointer;
   align-items: center;
-  transition: all var(--transition-base);
+  transition: border-left-color var(--transition-base);
   border-left: 3px solid transparent;
   position: relative;
+  isolation: isolate;
 }
 
 .item::before {
@@ -41,6 +42,9 @@ defineEmits([
   opacity: 0;
   transition: opacity var(--transition-base);
   pointer-events: none;
+  z-index: -1;
+  will-change: opacity;
+  transform: translateZ(0);
 }
 
 .item:hover::before {
@@ -60,5 +64,10 @@ p {
   color: var(--text-primary);
   font-weight: 500;
   font-size: 0.9rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
 }
 </style>

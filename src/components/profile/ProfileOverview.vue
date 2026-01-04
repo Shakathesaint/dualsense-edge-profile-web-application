@@ -837,14 +837,15 @@ const performQuickSwitch = async (localProfile: ProfileModel, targetSlot: Profil
 }
 
 .action-button-text {
-  all: unset;
+  background: transparent;
+  font-family: inherit;
   cursor: pointer;
   font-size: 0.75rem;
   color: var(--text-secondary);
   border: 1px solid var(--border-primary);
   padding: 4px 8px;
   border-radius: var(--border-radius-sm);
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
   white-space: nowrap;
 }
 
@@ -854,14 +855,15 @@ const performQuickSwitch = async (localProfile: ProfileModel, targetSlot: Profil
 }
 
 .clear-button {
-  all: unset;
+  background: transparent;
+  font-family: inherit;
   cursor: pointer;
   font-size: 0.75rem;
   color: var(--text-secondary);
   border: 1px solid var(--border-primary);
   padding: 4px 8px;
   border-radius: var(--border-radius-sm);
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
   white-space: nowrap;
 }
 
@@ -871,15 +873,18 @@ const performQuickSwitch = async (localProfile: ProfileModel, targetSlot: Profil
 }
 
 .profile-delete-button {
-  all: unset;
+  background: transparent;
+  font-family: inherit;
   cursor: pointer;
   font-size: 0.75rem;
   color: var(--accent-red);
   border: 1px solid var(--accent-red);
   padding: 4px 8px;
   border-radius: var(--border-radius-sm);
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
   white-space: nowrap;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .profile-delete-button:hover {

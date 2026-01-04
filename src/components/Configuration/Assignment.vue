@@ -70,21 +70,12 @@ const scanSelected = (e: Event) => {
   select_popup.value.style.display = "block";
 
   // Fixed centered position for popup
-  // Paddle buttons (indices 14 and 15) center on back view, others on front view
-  const isPaddle = original === ButtonIndex.PADDLE_LEFT || original === ButtonIndex.PADDLE_RIGHT;
-  
   // Center horizontally: container is ~900px max, controller is 512px centered
   // Popup is ~140px wide, so left = (containerWidth - popupWidth) / 2
   select_popup.value.style.left = 'calc(50% - 70px)';
   
-  // Vertical positioning: front view starts at top, back view is below
-  // Front view center: roughly 256px (512/2)
-  // Back view center: roughly 512 + 190 = 702px (front height + half of back cropped height)
-  if (isPaddle) {
-    select_popup.value.style.top = '620px'; // Centered on back view
-  } else {
-    select_popup.value.style.top = '200px'; // Centered on front view (visually in the middle of the controller body)
-  }
+  // All buttons now on front view - center vertically in controller area
+  select_popup.value.style.top = '200px';
 }
 
 const getCurveName = (id: number) => {
@@ -330,6 +321,11 @@ const rightRemaps = computed(() => {
        <!-- R1 Label Button -->
        <span class="button-label r1-label">R1</span>
 
+      <!-- Paddle Buttons -->
+      <span style="left: 180px; top: 310px; rotate: 10deg" :data-original="ButtonIndex.PADDLE_LEFT" class="interactable paddle_left" id="paddle_left">
+      </span>
+      <span style="left: 315px; top: 310px; rotate: -10deg" :data-original="ButtonIndex.PADDLE_RIGHT" class="interactable paddle_right" id="paddle_right">
+      </span>
 
       <section id="select-popup" ref="select_popup" class="select-popup">
         <template v-if="selectedButtonOriginalValue !== undefined">
@@ -352,13 +348,7 @@ const rightRemaps = computed(() => {
       </section>
     </section>
 
-    <!-- Back View -->
-    <section class="controller-back">
-        <span style="left: 195px; top: 220px; rotate: 10deg" :data-original="ButtonIndex.PADDLE_LEFT" class="interactable paddle_left" id="paddle_left">
-        </span>
-        <span style="left: 295px; top: 220px; rotate: -10deg" :data-original="ButtonIndex.PADDLE_RIGHT" class="interactable paddle_right" id="paddle_right">
-        </span>
-    </section>
+
   </section>
 </template>
 <style scoped>
@@ -384,17 +374,7 @@ const rightRemaps = computed(() => {
   z-index: 10;
 }
 
-.controller-back {
-    width: 512px;
-    height: 380px; /* Cropped height for back view focus on paddles */
-    background-image: url("../../assets/edge-back.png");
-    background-size: cover;
-    background-position: center top; 
-    position: relative;
-    margin: -80px auto 0; /* Overlap slightly or just close gap */
-    filter: brightness(0.95);
-    z-index: 9;
-}
+
 
 /* --- Info Cards --- */
 .info-card {

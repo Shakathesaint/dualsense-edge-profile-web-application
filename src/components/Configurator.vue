@@ -170,21 +170,21 @@ watch(props, data => {
 
 /* Apply Existing Profile Dropdown */
 .apply-existing-profile {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius-md);
-  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .apply-existing-profile label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 0;
   color: var(--text-secondary);
   font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 .apply-existing-profile select {
-  width: 100%;
+  min-width: 200px;
   background-color: var(--bg-input);
   border: 1px solid var(--border-primary);
   border-radius: var(--border-radius-sm);

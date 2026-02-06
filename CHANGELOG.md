@@ -1,3 +1,19 @@
+# 🚀 Changelog v2.1.0
+
+## ✨ New Features
+
+- **Active Profile Detection**
+  - Real-time detection of the active controller profile slot (1-4).
+  - Visual **"Active"** indicator badge on the currently selected profile in the UI.
+  - Automatic updates when switching profiles via FN + Button shortcuts.
+
+- **Diagnostic Tool**
+  - Added `tools/dualsense-hid-explorer.html`, a standalone diagnostic utility.
+  - Allows analyzing raw HID reports to debug controller state.
+  - Features real-time difference checking and noise filtering.
+
+---
+
 # 🚀 Changelog v2.0.0
 
 ## 🎨 Major UI Redesign

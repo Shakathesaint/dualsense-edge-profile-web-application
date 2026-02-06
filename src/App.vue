@@ -13,6 +13,7 @@ import {
   DUALSENSE_EDGE_FILTER,
   REPORT_ID,
   CRC32_REPORT_PREFIX,
+  INPUT_REPORT,
 } from "./constants/hid";
 
 const db = new LocalIndexDB('ds-edge-profiles');
@@ -26,6 +27,23 @@ provide('HIDController', edgeHIDController);
 let profiles = ref();
 let selectedProfile = ref();
 let hasSelectedSavedProfile = ref(false);
+
+// Active profile slot detection (1-4, null when unknown)
+let activeProfileSlot: Ref<number | null> = ref(null);
+provide('activeProfileSlot', activeProfileSlot);
+
+// Handler for input reports to detect active profile slot
+const handleInputReport = (event: Event) => {
+  const hidEvent = event as unknown as { data: DataView };
+  const data = new Uint8Array(hidEvent.data.buffer, hidEvent.data.byteOffset, hidEvent.data.byteLength);
+  if (data.length > INPUT_REPORT.ACTIVE_PROFILE_BYTE) {
+    const byte48 = data[INPUT_REPORT.ACTIVE_PROFILE_BYTE];
+    const slot = byte48 >> 4; // Extract upper nibble (1-4)
+    if (slot >= 1 && slot <= 4 && activeProfileSlot.value !== slot) {
+      activeProfileSlot.value = slot;
+    }
+  }
+};
 
 const getProfiles = async () => {
   if (!edgeHIDController.value) return;
@@ -74,6 +92,7 @@ const getDevice = async () => {
 
     try {
       await controller.open();
+      controller.addEventListener('inputreport', handleInputReport);
       edgeHIDController.value = controller;
       await getProfiles();
     } catch (openErr) {
@@ -95,6 +114,7 @@ navigator.hid!.addEventListener("connect", async ({device}) => {
       device.vendorId === DUALSENSE_EDGE_FILTER.vendorId) {
     try {
       await device.open();
+      device.addEventListener('inputreport', handleInputReport);
       edgeHIDController.value = device;
       await getProfiles();
     } catch (err) {
@@ -110,6 +130,7 @@ navigator.hid!.addEventListener("disconnect", ({device}) => {
     edgeHIDController.value = undefined;
     selectedProfile.value = null;
     profiles.value = null;
+    activeProfileSlot.value = null;
   }
 });
 
@@ -120,6 +141,7 @@ navigator.hid!.getDevices().then(async devices => {
         device.vendorId === DUALSENSE_EDGE_FILTER.vendorId) {
       try {
         await device.open();
+        device.addEventListener('inputreport', handleInputReport);
         edgeHIDController.value = device;
         await getProfiles();
         break; // Only connect to the first matching device

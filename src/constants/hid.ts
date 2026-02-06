@@ -35,6 +35,20 @@ export const REPORT_ID = {
 } as const;
 
 /**
+ * Input report byte positions for controller state
+ */
+export const INPUT_REPORT = {
+    /** Byte position containing active profile slot (byte 48 = 0x30) */
+    ACTIVE_PROFILE_BYTE: 48,
+} as const;
+
+/**
+ * Profile slot values in byte 48:
+ * Slot 1 (△) = 0x1C, Slot 2 (□) = 0x2C, Slot 3 (✕) = 0x3C, Slot 4 (○) = 0x4C
+ * Formula: slotNumber = (byte48 >> 4) to extract 1-4
+ */
+
+/**
  * Buffer sizes for HID communication
  */
 export const BUFFER_SIZE = 64;

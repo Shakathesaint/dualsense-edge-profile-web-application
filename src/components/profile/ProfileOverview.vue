@@ -38,7 +38,24 @@ const emit = defineEmits(['selected-profile', 'delete-profile', 'save-to-control
 const db: LocalIndexDB = inject('db') as LocalIndexDB;
 const hidController = inject('HIDController') as Ref<HIDDevice>;
 const getProfiles = inject('getProfiles') as Function;
+const activeProfileSlot = inject('activeProfileSlot') as Ref<number | null>;
 const { success, error, info } = useToast();
+
+// Check if a profile is the currently active one on the controller
+const isActiveProfile = (profile: ProfileModel): boolean => {
+  if (activeProfileSlot.value === null) return false;
+  const slot = profile.getProfileButtonSelector();
+  // Map ProfileButtonSelector to slot number (1-4)
+  // FN_TRIANGLE (0x63) = Slot 1, FN_SQUARE (0x60) = Slot 2, 
+  // FN_CROSS (0x61) = Slot 3, FN_CIRCLE (0x62) = Slot 4
+  const selectorToSlot: Record<number, number> = {
+    [ProfileButtonSelector.FN_TRIANGLE]: 1,
+    [ProfileButtonSelector.FN_SQUARE]: 2,
+    [ProfileButtonSelector.FN_CROSS]: 3,
+    [ProfileButtonSelector.FN_CIRCLE]: 4,
+  };
+  return selectorToSlot[slot] === activeProfileSlot.value;
+};
 
 db.getAll().then((profiles: Array<ProfileModel>) => savedProfiles.value = profiles.map((profileEntry: any) => {
 
@@ -437,8 +454,12 @@ const performQuickSwitch = async (localProfile: ProfileModel, targetSlot: Profil
                  v-for="(profile, i) in profiles"
                  :key="(profile as ProfileModel).getId()"
                  :profile="profile"
-                 :class="{ 'is-being-swapped': swappingSlot === (profile as ProfileModel).getProfileButtonSelector() }">
+                 :class="{ 
+                   'is-being-swapped': swappingSlot === (profile as ProfileModel).getProfileButtonSelector(),
+                   'is-active-profile': isActiveProfile(profile as ProfileModel)
+                 }">
           <div class="profile-right">
+            <span v-if="isActiveProfile(profile as ProfileModel)" class="active-badge">● Active</span>
             <span class="button-combination">
               <span class="fn-button">FN</span>
               <span class="plus-sign">+</span>
@@ -772,6 +793,28 @@ const performQuickSwitch = async (localProfile: ProfileModel, targetSlot: Profil
     background-color: rgba(0, 112, 209, 0.25);
     box-shadow: inset 0 0 16px rgba(0, 112, 209, 0.4);
   }
+}
+
+/* Active Profile Indicator */
+.is-active-profile {
+  border-left: 3px solid var(--accent-green) !important;
+  background-color: rgba(46, 164, 79, 0.08);
+}
+
+.active-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent-green);
+  background-color: rgba(46, 164, 79, 0.15);
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-bottom: 4px;
+  animation: activePulse 2s ease-in-out infinite;
+}
+
+@keyframes activePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 /* Profile Right Section */

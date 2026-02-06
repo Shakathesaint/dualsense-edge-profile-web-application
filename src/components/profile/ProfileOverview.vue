@@ -799,17 +799,23 @@ const performQuickSwitch = async (localProfile: ProfileModel, targetSlot: Profil
 .is-active-profile {
   border-left: 3px solid var(--accent-green) !important;
   background-color: rgba(46, 164, 79, 0.08);
+  padding-top: 34px !important; /* Space for top-left badge (6px top + 15px height + 13px gap) */
+  transition: all 0.3s ease;
 }
 
 .active-badge {
-  font-size: 0.7rem;
+  position: absolute;
+  top: 6px;
+  left: 16px;
+  font-size: 0.65rem;
   font-weight: 600;
   color: var(--accent-green);
   background-color: rgba(46, 164, 79, 0.15);
   padding: 2px 8px;
   border-radius: 10px;
-  margin-bottom: 4px;
   animation: activePulse 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
 }
 
 @keyframes activePulse {
